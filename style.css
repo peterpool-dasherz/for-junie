@@ -1,0 +1,342 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    background: linear-gradient(
+        135deg,
+        #fff0f5,
+        #fff8fa,
+        #ffe8f0
+    );
+    color: #633b4b;
+    overflow: hidden;
+}
+
+.background {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.cloud {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.75);
+    border-radius: 100px;
+    filter: blur(1px);
+    animation: float 12s ease-in-out infinite;
+}
+
+.cloud-1 {
+    width: 180px;
+    height: 60px;
+    top: 15%;
+    left: -40px;
+}
+
+.cloud-2 {
+    width: 240px;
+    height: 75px;
+    top: 65%;
+    right: -70px;
+    animation-delay: 3s;
+}
+
+.cloud-3 {
+    width: 130px;
+    height: 45px;
+    top: 35%;
+    right: 15%;
+    animation-delay: 6s;
+}
+
+.container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 25px;
+}
+
+.welcome-card {
+    width: min(500px, 100%);
+    padding: 55px 40px;
+    text-align: center;
+
+    background: rgba(255, 255, 255, 0.88);
+
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    border-radius: 30px;
+
+    box-shadow:
+        0 20px 60px rgba(220, 120, 155, 0.18);
+    backdrop-filter: blur(12px);
+    animation: appear 1s ease;
+}
+
+.heart {
+    font-size: 42px;
+    margin-bottom: 15px;
+
+    animation: heartbeat 2s ease-in-out infinite;
+}
+
+.small-text {
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: #b57b91;
+    margin-bottom: 12px;
+}
+
+h1 {
+    font-size: 48px;
+    color: #8f4d68;
+    margin-bottom: 20px;
+}
+
+.intro {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #8c6675;
+}
+
+.divider {
+    width: 50px;
+    height: 3px;
+    margin: 28px auto;
+
+    background: #f0a4bd;
+    border-radius: 10px;
+}
+
+.love-message {
+    font-size: 17px;
+    line-height: 1.8;
+    color: #76505f;
+    margin-bottom: 30px;
+}
+
+.love-message span {
+    font-weight: bold;
+    color: #d96d96;
+}
+
+button {
+    border: none;
+
+    padding: 15px 28px;
+
+    background: #f0a4bd;
+    color: white;
+
+    font-size: 16px;
+    font-weight: bold;
+
+    border-radius: 50px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 20px rgba(220, 120, 155, 0.25);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-3px);
+    background: #e98eae;
+    box-shadow:
+        0 12px 25px rgba(220, 120, 155, 0.3);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+@keyframes appear {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes heartbeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    
+    50% {
+        transform: scale(1.12);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(30px);
+    }
+}
+
+@media (max-width: 500px) {
+    .welcome-card {
+        padding: 45px 25px;
+        border-radius: 25px;
+    }
+
+    h1 {
+        font-size: 38px;
+    }
+
+    .intro {
+        font-size: 16px;
+    }
+
+    .love-message {
+        font-size: 15px;
+    }
+
+    .welcome-card {
+    transition:
+        opacity 0.5s ease,
+        transform 0.5s ease;
+}
+
+.menu {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 30px;
+    padding: 5px;
+}
+
+.menu-button {
+    min-height: 75px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    gap: 5px;
+
+    padding: 12px;
+
+    background: #f0a4bd;
+    color: white;
+
+    border: none;
+    border-radius: 20px;
+
+    box-shadow: 0 6px 15px rgba(220, 120, 155, 0.15);
+
+    font-size: 22px;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.menu-button span {
+    max-width: 150px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.menu-button:hover {
+    transform: translateY(-3px);
+
+    background: #e98eae;
+
+    box-shadow:
+        0 10px 20px rgba(220, 120, 155, 0.2);
+}
+
+
+
+@media (max-width: 500px) {
+
+    .menu {
+        gap: 10px;
+    }
+
+    .menu-button {
+        min-height: 85px;
+    }
+
+    .menu-button span {
+        max-width: 120px;
+        font-size: 12px;
+    }
+}
+
+.feature-message {
+    margin: 25px 0;
+
+    padding: 20px;
+
+    background: #fff5f8;
+
+    border-radius: 20px;
+
+    color: #76505f;
+
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.secondary-button,
+.back-button {
+    border: none;
+
+    padding: 13px 24px;
+
+    border-radius: 50px;
+
+    background: #f0a4bd;
+
+    color: white;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.secondary-button:hover,
+.back-button:hover {
+    transform: translateY(-3px);
+    background: #e98eae;
+}
+
+.back-button {
+    margin-top: 10px;
+
+    background: #f7c5d5;
+    color: #8f4d68;
+}
+}
