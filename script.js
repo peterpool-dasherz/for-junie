@@ -1,5 +1,14 @@
-const startButton = document.getElementById("startButton");
+const startButton = document.querySelector("#startButton");
 const welcomeCard = document.querySelector(".welcome-card");
+
+let hugCount = 0;
+
+function animateCard() {
+    welcomeCard.classList.remove("screen-enter");
+    void welcomeCard.offsetWidth;
+
+    welcomeCard.classList.add("screen-enter");
+}
 
 function showMenu() {
     welcomeCard.innerHTML = `
@@ -45,9 +54,19 @@ function showMenu() {
             🩷
             <span>reminders!</span>
         </button>
+
+        <button class = "menu-button" data-feature = "motivation">
+            🫡
+            <span>need me to be your hype man?</span>
+        </button>
+
+        <button class = "menu-button attention-button" data-feature = "attention">
+            🥺 
+            <span>em cần anh cơ!</span>
+        </button>
     </div>
     `;
-
+    animateCard();
     addMenuListeners();
 }
 
@@ -66,7 +85,12 @@ function showFeature(feature) {
     
     // hug
     if (feature === "hug") {
+        hugCount++;
+        const hugMessage = "tui biết tui đang xa cô lắm, nhưng mà coi như cái này là 1 cái ôm thật chặt từ tui nhaaa!!! yêu cô lắm áaa!!!";
         content = `
+            <div class = "hug-animation">
+                <span>ôm nèeee</span>
+            </div>
             <div class = "heart">💕</div>
             
             <p class = "small-text">
@@ -80,8 +104,15 @@ function showFeature(feature) {
             </p>
             
             <div class = "feature-message">
-                tui biết tui đang xa cô lắm, nhưng mà coi như cái này là 1 cái ôm thật chặt từ tui nhaaa!!! yêu cô lắm áaa!!!
-            </div> `;
+                ${hugMessage}
+            </div>
+            <p class = "hug-counter">
+                ôm ${hugCount} lần ời nèeeee!!!
+            </p>
+            <button class = "secondary-button" id = "hugAgainButton">
+                ôm thêm cái nè!
+            </button>
+        `;
     }
 
     // đồ ngọt
@@ -104,7 +135,7 @@ function showFeature(feature) {
             <div class = "feature-message">
                 ${randomMessage}
             </div>
-            <button class = "secondary-button" onclick = "showFeature('sweet')">
+            <button class = "secondary-button" id = "sweetAgainButton">
                 thêm nè!!!
             </button>
         `;
@@ -194,13 +225,101 @@ function showFeature(feature) {
         `;
     }
 
+    // motivation
+
+    if (feature === "motivation") {
+        const motivationMessages = [
+            "u làm tốt lắm rồi í! don't push urself too hard nha!!!",
+            "tui biết cô mệt, nhưng mà cô giỏi lắm í, ráng lên nha, tui ở đây mòooo!!!",
+            "nếu hôm nay u thấy là u hong có sức, thì hãy nhớ là tui đang chờ cô để nghe cô rant nè!",
+            "i am veri proud of u my dearest junie blehhhh!!! aint nobody is better than u á!",
+            "i swear ur the goat, like deadass u are=))))), tui bị khùng á nhưng mà thats what i mean xin nhỗi hihiii yêu vl íiii"
+        ];
+
+        const randomMessage = 
+            motivationMessages[
+                Math.floor(Math.random() * motivationMessages.length)
+            ];
+        
+        content = `
+            <div class = "heart">🫡</div>
+            <p class = "small-text">
+                for when things get hard ạ
+            </p>
+            <h1>biggest glazer của u nè!</h1>
+            <div class = "feature-message">
+                ${randomMessage}
+            </div>
+            <button class = "secondary-button" id = "motivationAgainButton">
+                cần thêm hảaa, đây nèee!
+            </button>
+        `;
+    }
+
+    // attention!
+
+    if (feature === "attention") {
+        content = `
+            <div class = "heart">🥺</div>
+            <p class = "small-text">
+                u need me rồi hả?! bấm dô!
+            </p>
+            <h1>helloooo</h1>
+            <div class = "feature-message">
+                em bé cần mình rồi! có hết ở đây nè!
+                <br><br>
+                gọi tui liền đi! tui chờ nè!
+            </div>
+            <div class = "contact-buttons">
+                <a
+                    class = "contact-button"
+                    href = "tel: +84359116670"
+                >
+                    call me here!!! even though u knew my number hihi để đó đó!
+                </a>
+
+                <a
+                    class = "contact-button"
+                    href = "https://www.instagram.com/nolimitpeter_/"
+                    target = "_blank"
+                    rel = "noopener noreferrer"
+                >
+                    ig dm của tui luôn mở mòoooooo!!!
+                </a>
+            </div>
+        `;
+    }
+
     // add + back button
     welcomeCard.innerHTML = `
         ${content}
-        <button class = "back-button" onclick = "showMenu()">
+        <button class = "back-button" id = "backButton">
             back button
         </button>
     `;
+    animateCard();
+    const backButton = document.querySelector("#backButton");
+    backButton.addEventListener("click", function () {
+        showMenu();
+    });
+    const hugAgainButton = document.querySelector("#hugAgainButton");
+    if (hugAgainButton) {
+        hugAgainButton.addEventListener("click", function () {
+            showFeature("hug");
+        });
+    }
+    const sweetAgainButton = document.querySelector("#sweetAgainButton");
+    if (sweetAgainButton) {
+        sweetAgainButton.addEventListener("click", function () {
+            showFeature("sweet");
+        });
+    }
+    const motivationAgainButton = document.querySelector("#motivationAgainButton");
+    if (motivationAgainButton) {
+        motivationAgainButton.addEventListener("click", function () {
+            showFeature("motivation");
+        });
+    }
 }
 
 startButton.addEventListener("click", function () {
