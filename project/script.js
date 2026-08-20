@@ -3,6 +3,84 @@ const welcomeCard = document.querySelector(".welcome-card");
 
 let hugCount = 0;
 
+let siteContent = null;
+
+async function loadSiteContent() {
+    try {
+        const response = await fetch("data/site-content.json");
+        if (!response.ok) {
+            throw new Error(
+                `Could not load site content: ${response.status}`
+            );
+        }
+
+        siteContent = await response.json();
+        applyHomeContent();
+    } catch (error) {
+        console.error("Failed to load site content:", error);
+    }
+}
+
+function applyHomeContent() {
+    const home = siteContent.home;
+
+    document.querySelector(".small-text").textContent = home.eyebrow;
+    document.querySelector("h1").textContent = home.title;
+    document.querySelector(".intro").textContent = home.intro;
+    document.querySelector(".love-message").textContent = home.message;
+
+    const bannerImage = document.querySelector(".home-photo-banner img");
+    if (bannerImage) {
+        bannerImage.src = home.bannerImage;
+        bannerImage.alt = home.bannerAlt;
+    }
+
+    document.querySelector("#startButton").textContent = home.button;
+}
+
+const photoFiles = [
+    "0283D1FE-01D5-4CEC-BFC4-F824D0D1C51A.JPG",
+    "036A3711-3353-40A0-952A-35FBD0A41176.JPG",
+    "06EDE733-CC4F-4467-A0AA-B39688282C9D.JPG",
+    "0BC161CB-EF0B-4715-9A85-3D4D09484F37.JPG",
+    "11BC886B-6F1A-4B77-AC7C-1D6ABC0D53FD.JPG",
+    "28791C71-B2EF-4051-9C16-0653560B771C.JPG",
+    "2E1AA16E-8910-4B8E-88B9-02B0BFF1F4C2.JPG",
+    "35BAF841-8C90-49C6-917A-DCA4A3B2FD3E.JPG",
+    "5FDBF4E3-D0AD-4F78-B51A-7476FCB12D6B.JPG",
+    "602431D8-E176-4BE3-ACB6-45ADC64643D0.JPG",
+    "62004986-39B8-41C6-8BDF-0EF69BA85104.JPG",
+    "73342D91-5D9F-4D3A-BA45-71757FDE29D0.JPG",
+    "778590B8-3559-4847-A2F6-CC5158DE0734.JPG",
+    "7B5B37F4-4E5C-4328-9DB5-2E169F024B5F.JPG",
+    "7F219F9F-4CA6-4192-BA22-DF05589FE616.JPG",
+    "989FFF25-79C0-490E-82E9-5F9589FBC3BB.JPG",
+    "A6CF8A48-24EE-4A9B-8101-249C883A93AF.JPG",
+    "B9545158-9187-4311-959A-950B189E38C6.JPG",
+    "C4D830A7-ED4F-47E9-A729-090CEB6DAE9D.JPG",
+    "E2A251ED-3DA3-4D3C-803F-B20EDAD0D6BD.JPG",
+    "E48E96B9-2138-4FDA-A36E-56E32B6D434A.JPG",
+    "E6D3C405-8291-4159-8815-FEAE0ACBDE2C.JPG",
+    "E8918D29-E1F0-4331-905C-B3DD88FBE95F.JPG",
+    "EFF90954-BA58-4B53-AEB2-2845C5B6A9EB.JPG",
+    "FullSizeRender 2.jpg",
+    "FullSizeRender.jpg",
+    "IMG_0400.jpg",
+    "IMG_4876.JPG",
+    "IMG_4877.JPG",
+    "IMG_4882.JPG",
+    "IMG_4911.JPG",
+    "IMG_4942.JPG",
+    "IMG_4993.JPG",
+    "IMG_5006.JPG",
+    "IMG_5091.JPG",
+    "IMG_5096.JPG",
+    "IMG_5099.JPG",
+    "IMG_5122.JPG",
+    "IMG_5172.JPG",
+    "fqs 2026-07-03 1026238A53D1E2F106.JPG"
+];
+
 function animateCard() {
     welcomeCard.classList.remove("screen-enter");
     void welcomeCard.offsetWidth;
@@ -180,19 +258,36 @@ function showFeature(feature) {
     // photos!
 
     if (feature === "photos") {
+        const photoGallery = photoFiles.map((file, index) => `
+        <button
+            class = "photo-card"
+            type = "button"
+            data-photo = "${file}"
+        >
+            <img
+                src = "assets/images/${file}"
+                alt = "memory ${index + 1}"
+                loading = "lazy"
+            >
+        </button>
+        `).join("");
+
+
         content = `
             <div class = "heart">📷</div>
             <p class = "small-text">
                 memories of us!
             </p>
             <h1>ảnh nè!</h1>
-            <div class = "feature-message">
-                lát tui bỏ sau nha, its gonna come soon!
-                <br><br>
-                <small>
-                    coming soon chat
-                </small>
+            <p class = "gallery-intro">
+                bọn mình chưa có nhiều ảnh với nhau, nên tui coi như đây là chỗ store hết mọi thứ tụi mình có nha!!!
+            </p>
+            <div class = "photo-gallery">
+                ${photoGallery}
             </div>
+            <p class = "gallery-note">
+                bấm dô đi đừng có nói cô xấu là được!
+            </p>
         `;
     }
 
@@ -320,6 +415,49 @@ function showFeature(feature) {
             showFeature("motivation");
         });
     }
+    const photoCards = document.querySelectorAll(".photo-card");
+    photoCards.forEach(card => {
+        card.addEventListener("click", function () {
+            const image = this.querySelector("img");
+            const lightbox = document.createElement("div");
+            lightbox.className = "photo-lightbox";
+            lightbox.innerHTML = `
+                <button
+                    class = "lightbox-close"
+                    type = "button"
+                    aria-label = "Close photo"
+                >
+                    x
+                </button>
+                <img
+                    src = "${image.src}"
+                    alt = "${image.alt}"
+                >
+            `;
+            document.body.appendChild(lightbox);
+            requestAnimationFrame (() => {
+                lightbox.classList.add("is-open");
+            });
+            const closeLightbox = () => {
+                lightbox.remove();
+            };
+            lightbox.addEventListener("click", event => {
+                if (
+                    event.target === lightbox ||
+                    event.target.classList.contains("lightbox-close")
+                ) {
+                    closeLightbox();
+                }
+            });
+            const closeOnEscape = event => {
+                if (event.key === "Escape") {
+                    closeLightbox();
+                    document.removeEventListener("keydown", closeOnEscape);
+                }
+            };
+            document.addEventListener("keydown", closeOnEscape);
+        });
+    });
 }
 
 startButton.addEventListener("click", function () {
@@ -332,3 +470,5 @@ startButton.addEventListener("click", function () {
     
     }, 300);
 });
+
+loadSiteContent();
