@@ -38,54 +38,30 @@ function applyHomeContent() {
     document.querySelector("#startButton").textContent = home.button;
 }
 
-const photoFiles = [
-    "0283D1FE-01D5-4CEC-BFC4-F824D0D1C51A.JPG",
-    "036A3711-3353-40A0-952A-35FBD0A41176.JPG",
-    "06EDE733-CC4F-4467-A0AA-B39688282C9D.JPG",
-    "0BC161CB-EF0B-4715-9A85-3D4D09484F37.JPG",
-    "11BC886B-6F1A-4B77-AC7C-1D6ABC0D53FD.JPG",
-    "28791C71-B2EF-4051-9C16-0653560B771C.JPG",
-    "2E1AA16E-8910-4B8E-88B9-02B0BFF1F4C2.JPG",
-    "35BAF841-8C90-49C6-917A-DCA4A3B2FD3E.JPG",
-    "5FDBF4E3-D0AD-4F78-B51A-7476FCB12D6B.JPG",
-    "602431D8-E176-4BE3-ACB6-45ADC64643D0.JPG",
-    "62004986-39B8-41C6-8BDF-0EF69BA85104.JPG",
-    "73342D91-5D9F-4D3A-BA45-71757FDE29D0.JPG",
-    "778590B8-3559-4847-A2F6-CC5158DE0734.JPG",
-    "7B5B37F4-4E5C-4328-9DB5-2E169F024B5F.JPG",
-    "7F219F9F-4CA6-4192-BA22-DF05589FE616.JPG",
-    "989FFF25-79C0-490E-82E9-5F9589FBC3BB.JPG",
-    "A6CF8A48-24EE-4A9B-8101-249C883A93AF.JPG",
-    "B9545158-9187-4311-959A-950B189E38C6.JPG",
-    "C4D830A7-ED4F-47E9-A729-090CEB6DAE9D.JPG",
-    "E2A251ED-3DA3-4D3C-803F-B20EDAD0D6BD.JPG",
-    "E48E96B9-2138-4FDA-A36E-56E32B6D434A.JPG",
-    "E6D3C405-8291-4159-8815-FEAE0ACBDE2C.JPG",
-    "E8918D29-E1F0-4331-905C-B3DD88FBE95F.JPG",
-    "EFF90954-BA58-4B53-AEB2-2845C5B6A9EB.JPG",
-    "FullSizeRender 2.jpg",
-    "FullSizeRender.jpg",
-    "IMG_0400.jpg",
-    "IMG_4876.JPG",
-    "IMG_4877.JPG",
-    "IMG_4882.JPG",
-    "IMG_4911.JPG",
-    "IMG_4942.JPG",
-    "IMG_4993.JPG",
-    "IMG_5006.JPG",
-    "IMG_5091.JPG",
-    "IMG_5096.JPG",
-    "IMG_5099.JPG",
-    "IMG_5122.JPG",
-    "IMG_5172.JPG",
-    "fqs 2026-07-03 1026238A53D1E2F106.JPG"
-];
+
 
 function animateCard() {
     welcomeCard.classList.remove("screen-enter");
     void welcomeCard.offsetWidth;
 
     welcomeCard.classList.add("screen-enter");
+}
+
+function getOptimizedPhotoPath(photoPath) {
+    return photoPath.replace(
+        "assets/images/",
+        "assets/images/optimized/"
+    );
+}
+
+function handlePhotoError(image) {
+    image.classList.add("image-failed");
+    image.alt = "ảnh lỗi ùi, để anh add lại nhen!!";
+    const photoCard = image.closest(".photo-card");
+    if (photoCard) {
+        photoCard.classList.add("photo-unavailable");
+        photoCard.disabled = true;
+    }
 }
 
 function showMenu() {
@@ -258,37 +234,48 @@ function showFeature(feature) {
     // photos!
 
     if (feature === "photos") {
-        const photoGallery = photoFiles.map((file, index) => `
-        <button
-            class = "photo-card"
-            type = "button"
-            data-photo = "${file}"
-        >
-            <img
-                src = "assets/images/${file}"
-                alt = "memory ${index + 1}"
-                loading = "lazy"
-            >
-        </button>
-        `).join("");
+        const photos = siteContent?.photos;
+        if (!photos) {
+            content = `
+                <div class = "heart">📷</div>
+                <h1>ảnh nè!</h1>
+                <div class = "feature-message" aria-live = "polite">
+                    its loadinggg, chờ chút ii!
+                </div>
+            `;
+        } else {
+            const photoGallery = photos.items.map((photo, index) => `
+                <button
+                    class = "photo-card"
+                    type = "button"
+                    aria-label = "Open ${photo.alt || `memory ${index + 1}`}"
+                    data-photo = "${photo.src}"
+                >
+                    <img
+                        src = "${getOptimizedPhotoPath(photo.src)}"
+                        alt = "${photo.alt || `memory ${index + 1}`}"
+                        loading = "lazy"
+                        onerror = "handlePhotoError(this)"
+                    >
+                    ${
+                        photo.caption
+                            ? `<span class = "photo-caption">${photo.caption}</span>`
+                            : ""
+                    }
+                </button>
+            `).join("");
 
-
-        content = `
-            <div class = "heart">📷</div>
-            <p class = "small-text">
-                memories of us!
-            </p>
-            <h1>ảnh nè!</h1>
-            <p class = "gallery-intro">
-                bọn mình chưa có nhiều ảnh với nhau, nên tui coi như đây là chỗ store hết mọi thứ tụi mình có nha!!!
-            </p>
-            <div class = "photo-gallery">
-                ${photoGallery}
-            </div>
-            <p class = "gallery-note">
-                bấm dô đi đừng có nói cô xấu là được!
-            </p>
-        `;
+            content = `
+                <div class = "heart">📷</div>
+                <p class = "small-text">${photos.eyebrow}</p>
+                <h1>${photos.title}</h1>
+                <p class = "gallery-intro">${photos.intro}</p>
+                <div class = "photo-gallery">
+                    ${photoGallery}
+                </div>
+                <p class = "gallery-note">${photos.note}</p>
+            `;
+        }
     }
 
     // reminders!
@@ -388,8 +375,13 @@ function showFeature(feature) {
     // add + back button
     welcomeCard.innerHTML = `
         ${content}
-        <button class = "back-button" id = "backButton">
-            back button
+        <button
+            class = "back-button"
+            id = "backButton"
+            type = "button"
+            aria-label = "Return to the menu"
+        >
+            về menu lại nè!
         </button>
     `;
     animateCard();
@@ -418,9 +410,15 @@ function showFeature(feature) {
     const photoCards = document.querySelectorAll(".photo-card");
     photoCards.forEach(card => {
         card.addEventListener("click", function () {
+            const triggerButton = this;
             const image = this.querySelector("img");
             const lightbox = document.createElement("div");
+
             lightbox.className = "photo-lightbox";
+            lightbox.setAttribute("role", "dialog");
+            lightbox.setAttribute("aria-modal", "true");
+            lightbox.setAttribute("aria-label", "Expanded photo");
+
             lightbox.innerHTML = `
                 <button
                     class = "lightbox-close"
@@ -435,11 +433,15 @@ function showFeature(feature) {
                 >
             `;
             document.body.appendChild(lightbox);
+            const closeButton = lightbox.querySelector(".lightbox-close");
+            closeButton.focus();
             requestAnimationFrame (() => {
                 lightbox.classList.add("is-open");
             });
             const closeLightbox = () => {
                 lightbox.remove();
+                document.removeEventListener("keydown", closeOnEscape);
+                triggerButton.focus();
             };
             lightbox.addEventListener("click", event => {
                 if (
@@ -452,7 +454,6 @@ function showFeature(feature) {
             const closeOnEscape = event => {
                 if (event.key === "Escape") {
                     closeLightbox();
-                    document.removeEventListener("keydown", closeOnEscape);
                 }
             };
             document.addEventListener("keydown", closeOnEscape);

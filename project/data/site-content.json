@@ -7,5 +7,174 @@
         "button": "Click me chat",
         "bannerImage": "assets/images/FullSizeRender 2.jpg",
         "bannerAlt": "a photo of us"
+    },
+
+    "photos": {
+        "eyebrow": "memories of us!",
+        "title": "ảnh nè!",
+        "intro": "bọn mình chưa có nhiều ảnh với nhau, nên tui coi như đây là chỗ store hết mọi thứ tụi mình có nha!!!",
+        "note": "bấm dô đi đừng có nói cô xấu là được!",
+        "items": [
+    {
+        "src": "assets/images/0283D1FE-01D5-4CEC-BFC4-F824D0D1C51A.JPG",
+        "alt": "Memory of us 1"
+    },
+    {
+        "src": "assets/images/036A3711-3353-40A0-952A-35FBD0A41176.JPG",
+        "alt": "Memory of us 2"
+    },
+    {
+        "src": "assets/images/06EDE733-CC4F-4467-A0AA-B39688282C9D.JPG",
+        "alt": "Memory of us 3"
+    },
+    {
+        "src": "assets/images/0BC161CB-EF0B-4715-9A85-3D4D09484F37.JPG",
+        "alt": "Memory of us 4"
+    },
+    {
+        "src": "assets/images/11BC886B-6F1A-4B77-AC7C-1D6ABC0D53FD.JPG",
+        "alt": "Memory of us 5"
+    },
+    {
+        "src": "assets/images/28791C71-B2EF-4051-9C16-0653560B771C.JPG",
+        "alt": "Memory of us 6"
+    },
+    {
+        "src": "assets/images/2E1AA16E-8910-4B8E-88B9-02B0BFF1F4C2.JPG",
+        "alt": "Memory of us 7"
+    },
+    {
+        "src": "assets/images/35BAF841-8C90-49C6-917A-DCA4A3B2FD3E.JPG",
+        "alt": "Memory of us 8"
+    },
+    {
+        "src": "assets/images/5FDBF4E3-D0AD-4F78-B51A-7476FCB12D6B.JPG",
+        "alt": "Memory of us 9"
+    },
+    {
+        "src": "assets/images/602431D8-E176-4BE3-ACB6-45ADC64643D0.JPG",
+        "alt": "Memory of us 10"
+    },
+    {
+        "src": "assets/images/62004986-39B8-41C6-8BDF-0EF69BA85104.JPG",
+        "alt": "Memory of us 11"
+    },
+    {
+        "src": "assets/images/73342D91-5D9F-4D3A-BA45-71757FDE29D0.JPG",
+        "alt": "Memory of us 12"
+    },
+    {
+        "src": "assets/images/778590B8-3559-4847-A2F6-CC5158DE0734.JPG",
+        "alt": "Memory of us 13"
+    },
+    {
+        "src": "assets/images/7B5B37F4-4E5C-4328-9DB5-2E169F024B5F.JPG",
+        "alt": "Memory of us 14"
+    },
+    {
+        "src": "assets/images/7F219F9F-4CA6-4192-BA22-DF05589FE616.JPG",
+        "alt": "Memory of us 15"
+    },
+    {
+        "src": "assets/images/989FFF25-79C0-490E-82E9-5F9589FBC3BB.JPG",
+        "alt": "Memory of us 16"
+    },
+    {
+        "src": "assets/images/A6CF8A48-24EE-4A9B-8101-249C883A93AF.JPG",
+        "alt": "Memory of us 17"
+    },
+    {
+        "src": "assets/images/B9545158-9187-4311-959A-950B189E38C6.JPG",
+        "alt": "Memory of us 18"
+    },
+    {
+        "src": "assets/images/C4D830A7-ED4F-47E9-A729-090CEB6DAE9D.JPG",
+        "alt": "Memory of us 19"
+    },
+    {
+        "src": "assets/images/E2A251ED-3DA3-4D3C-803F-B20EDAD0D6BD.JPG",
+        "alt": "Memory of us 20"
+    },
+    {
+        "src": "assets/images/E48E96B9-2138-4FDA-A36E-56E32B6D434A.JPG",
+        "alt": "Memory of us 21"
+    },
+    {
+        "src": "assets/images/E6D3C405-8291-4159-8815-FEAE0ACBDE2C.JPG",
+        "alt": "Memory of us 22"
+    },
+    {
+        "src": "assets/images/E8918D29-E1F0-4331-905C-B3DD88FBE95F.JPG",
+        "alt": "Memory of us 23"
+    },
+    {
+        "src": "assets/images/EFF90954-BA58-4B53-AEB2-2845C5B6A9EB.JPG",
+        "alt": "Memory of us 24"
+    },
+    {
+        "src": "assets/images/FullSizeRender 2.jpg",
+        "alt": "Memory of us 25"
+    },
+    {
+        "src": "assets/images/FullSizeRender.jpg",
+        "alt": "Memory of us 26"
+    },
+    {
+        "src": "assets/images/IMG_0400.jpg",
+        "alt": "Memory of us 27"
+    },
+    {
+        "src": "assets/images/IMG_4876.JPG",
+        "alt": "Memory of us 28"
+    },
+    {
+        "src": "assets/images/IMG_4877.JPG",
+        "alt": "Memory of us 29"
+    },
+    {
+        "src": "assets/images/IMG_4882.JPG",
+        "alt": "Memory of us 30"
+    },
+    {
+        "src": "assets/images/IMG_4911.JPG",
+        "alt": "Memory of us 31"
+    },
+    {
+        "src": "assets/images/IMG_4942.JPG",
+        "alt": "Memory of us 32"
+    },
+    {
+        "src": "assets/images/IMG_4993.JPG",
+        "alt": "Memory of us 33"
+    },
+    {
+        "src": "assets/images/IMG_5006.JPG",
+        "alt": "Memory of us 34"
+    },
+    {
+        "src": "assets/images/IMG_5091.JPG",
+        "alt": "Memory of us 35"
+    },
+    {
+        "src": "assets/images/IMG_5096.JPG",
+        "alt": "Memory of us 36"
+    },
+    {
+        "src": "assets/images/IMG_5099.JPG",
+        "alt": "Memory of us 37"
+    },
+    {
+        "src": "assets/images/IMG_5122.JPG",
+        "alt": "Memory of us 38"
+    },
+    {
+        "src": "assets/images/IMG_5172.JPG",
+        "alt": "Memory of us 39"
+    },
+    {
+        "src": "assets/images/fqs 2026-07-03 1026238A53D1E2F106.JPG",
+        "alt": "Memory of us 40"
+    }
+]
     }
 }
