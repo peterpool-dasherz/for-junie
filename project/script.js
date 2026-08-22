@@ -1,9 +1,81 @@
 const startButton = document.querySelector("#startButton");
 const welcomeCard = document.querySelector(".welcome-card");
 
-let hugCount = 0;
+const messageJar = {
+    miss: {
+        label: "when you miss me",
+        messages: [
+            "i miss you a lot too baby:<, nhưng mà hong sao, tui chờ cô được mòooo",
+            "ráng lên nha, rồi mình lại gặp nhau thui nè khánh vy!!!!, this is just temporary, im stayin with u forevaaaa màaa!",
+            "stay here for a bit if u need nha, i love you the mostest á công chúa!!!"
+        ]
+    },
+    stressed: {
+        label: "when you're stressed",
+        messages: [
+            "take a deep breath, u dont need to carry this alone dear:<",
+            "tui có thể carry sự nặng nề đó với cô nè, hong ôm cô được bây giờ nên tui mong cô sẽ cảm nhận được sự ấm áp từ tui qua chỗ này nha:<",
+            "thương lắm á:<, chạy về với tui khi mọi thứ nặng nề hơn 1 chút nhé:<",
+            "hôm nay cô cố gắng rồi nè, em bé của anh giỏi lắm í!"
+        ]
+    },
 
-let siteContent = null;
+    sleep: {
+        label: "when you can't sleep",
+        messages: [
+            "thử tưởng tượng tui đang nằm cạnh cô i, mong là nó giúp cô ngủ dễ hơn í, tui yêu cô lắm công chúa cụa tui!!!",
+            "ngủ i, mai còn dậy đi làm với đi học á, dậy rồi nhắn tui liền nha, yêu khánh vy!!!"
+        ]
+    },
+
+    reassurance: {
+        label: "when you need reassurance",
+        messages: [
+            "cô hong mất tui được đâu í, tui bám dai lắmmmmm!!",
+            "tui pinky promise là yêu cô đến cuối cùng mà, hong cần phải nghi ngờ tình cảm tui đâu!!!",
+            "i'd spend a lifetime to prove that i love you the most out of anything and anybody lun á:<",
+            "hong ai yêu cô được như tui đâu tui hứa lun á!",
+            "mốt về tui bù cho nha, tui thương, tui yêu cô lắm á:<<"
+        ]
+    },
+
+    angry: {
+        label: "when you're angry",
+        messages: [
+            "hong sao nè, nguôi giận i, ull be okayyyy!!!",
+            "take a big deep breath, you don't have to tell me now, but just know im here to listen to u rant nè!!!",
+            "biết là vợ tui đang khó chịu, lại đây tui ôm 1 cái để nguôi giận nè, yêu lắm íiii!!!"
+        ]
+    },
+
+    motivation: {
+        label: "when you need motivation",
+        messages: [
+            "to me, you're the goat á, hơn cả shai với cl16 lun ó:<",
+            "i know u can do anything that life throws at u, and id always be the one who supports u!",
+            "theres 7 billion people in the world, im one of your supporter",
+            "if its reduced to 1000, im still one of them",
+            "a 100? obv im one",
+            "10? still is",
+            "and if theres only one existing rn, im that one dear!",
+            "your biggest glazer á!!! nhớ đó nha, yêu vợ iu cụa tui lắmmmm"
+        ]
+    },
+
+    love: {
+        label: "when you need to feel loved",
+        messages: [
+            "tui yêu cô nhiềuuuuuu ơiiiiii làaaaaa nhiềuuuuuuuuu, more than anything and anybody in this whole universe",
+            "you're the best thing that ever happened to me á, i hope yk that nè:<",
+            "you're my only exception and my main priority, i love you lots baby!!!!",
+            "hong ai yêu cô nhiều như tui hết á, hứa nhunnnn",
+            "anh yêu em nhiều nhất cái vũ trụ nàyyyyyy!!!",
+            "em là để anh thương, anh quan tâm, anh xót, anh lo và anh yêu:<",
+            "cố lên nha, tui hong có đi đâu hết trơn á!!!!",
+            "anh yêu emmmmm!!! <333"
+        ]
+    }
+}
 
 async function loadSiteContent() {
     try {
@@ -117,6 +189,10 @@ function showMenu() {
         <button class = "menu-button attention-button" data-feature = "attention">
             🥺 
             <span>em cần anh cơ!</span>
+        </button>
+        <button class = "menu-button jar-button" data-feature = "messageJar">
+            🫙
+            <span>message jar!</span>
         </button>
     </div>
     `;
@@ -372,6 +448,43 @@ function showFeature(feature) {
         `;
     }
 
+    // message jar
+
+    if (feature === "messageJar") {
+        const jarSituations = Object.entries(messageJar)
+            .map(([key, situation]) => `
+                <button
+                    class = "jar-situation"
+                    type = "button"
+                    data-situation = "${key}"
+                >
+                    ${situation.label}
+                </button>
+            `).join("");
+        
+        content = `
+            <div class = "heart">🫙</div>
+            <p class = "small-text">
+                open this nhaaaa!!!
+            </p>
+            <h1>message jar</h1>
+            <p class = "gallery-intro">
+                chọn cái nào fit nha vợ iu ơi
+            </p>
+            <div class = "jar-situations">
+                ${jarSituations}
+            </div>
+            <div
+                class = "jar-message"
+                id = "jarMessage"
+                aria-live = "polite"
+            >
+                chọn 1 cái ở trên đi nè!
+            </div>
+        `;
+    }
+
+
     // add + back button
     welcomeCard.innerHTML = `
         ${content}
@@ -457,6 +570,22 @@ function showFeature(feature) {
                 }
             };
             document.addEventListener("keydown", closeOnEscape);
+        });
+    });
+    const jarSituationButtons = document.querySelectorAll(".jar-situation");
+    const jarMessage = document.querySelector("#jarMessage");
+
+    jarSituationButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            const situation = messageJar[this.dataset.situation];
+            const randomMessage =
+                situation.messages[
+                    Math.floor(Math.random() * situation.messages.length)
+                ];
+            jarMessage.textContent = randomMessage;
+            jarMessage.classList.remove("jar-message-pop");
+            void jarMessage.offsetWidth;
+            jarMessage.classList.add("jar-message-pop");
         });
     });
 }
