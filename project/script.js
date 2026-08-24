@@ -1,6 +1,7 @@
 const startButton = document.querySelector("#startButton");
 const welcomeCard = document.querySelector(".welcome-card");
-
+let siteContent = {};
+let hugCount = 0;
 const messageJar = {
     miss: {
         label: "when you miss me",
@@ -463,7 +464,7 @@ function showFeature(feature) {
             `).join("");
         
         content = `
-            <div class = "heart">🫙</div>
+            <div class = "heart jar-visual" id = "jarVisual">🫙</div>
             <p class = "small-text">
                 open this nhaaaa!!!
             </p>
@@ -471,6 +472,13 @@ function showFeature(feature) {
             <p class = "gallery-intro">
                 chọn cái nào fit nha vợ iu ơi
             </p>
+            <button
+                class = "random-message-button"
+                id = "randomMessageButton"
+                type = "button"
+            >
+                random nè!!!
+            </button>
             <div class = "jar-situations">
                 ${jarSituations}
             </div>
@@ -481,6 +489,13 @@ function showFeature(feature) {
             >
                 chọn 1 cái ở trên đi nè!
             </div>
+            <button
+                class = "draw-another-button"
+                id = "drawAnotherButton"
+                type = "button"
+            >
+                draw another one!!!
+            </button>
         `;
     }
 
@@ -572,22 +587,56 @@ function showFeature(feature) {
             document.addEventListener("keydown", closeOnEscape);
         });
     });
-    const jarSituationButtons = document.querySelectorAll(".jar-situation");
+    const randomMessageButton = document.querySelector("#randomMessageButton");
     const jarMessage = document.querySelector("#jarMessage");
+    const drawAnotherButton = document.querySelector("#drawAnotherButton");
+    const jarVisual = document.querySelector("#jarVisual");
 
+    function displayJarMessage(message) {
+        jarMessage.textContent = message;
+        jarMessage.classList.remove("jar-message-pop");
+        jarVisual.classList.remove("jar-shake");
+        void jarMessage.offsetWidth;
+        void jarVisual.offsetWidth;
+        jarMessage.classList.add("jar-message-pop");
+        jarVisual.classList.add("jar-shake");
+    }
+
+    if (randomMessageButton) {
+        randomMessageButton.addEventListener("click", function () {
+            const situations = Object.values(messageJar);
+            const randomSituation = 
+                situations[Math.floor(Math.random() * situations.length)];
+            const randomMessage = 
+                randomSituation.messages[
+                    Math.floor(Math.random() * randomSituation.messages.length)
+                ];
+            displayJarMessage(randomMessage);
+        });
+    }
+    const jarSituationButtons = document.querySelectorAll(".jar-situation");
     jarSituationButtons.forEach(button => {
         button.addEventListener("click", function () {
             const situation = messageJar[this.dataset.situation];
-            const randomMessage =
+            const randomMessage = 
                 situation.messages[
                     Math.floor(Math.random() * situation.messages.length)
                 ];
-            jarMessage.textContent = randomMessage;
-            jarMessage.classList.remove("jar-message-pop");
-            void jarMessage.offsetWidth;
-            jarMessage.classList.add("jar-message-pop");
+            displayJarMessage(randomMessage);
         });
     });
+    if (drawAnotherButton) {
+        drawAnotherButton.addEventListener("click", function () {
+            const situations = Object.values(messageJar);
+            const randomSituation = 
+                situations[Math.floor(Math.random() * situations.length)];
+            const randomMessage = 
+                randomSituation.messages[
+                    Math.floor(Math.random() * randomSituation.messages.length)
+                ];
+            displayJarMessage(randomMessage);
+        });
+    }
 }
 
 startButton.addEventListener("click", function () {
@@ -601,4 +650,4 @@ startButton.addEventListener("click", function () {
     }, 300);
 });
 
-loadSiteContent();
+loadSiteContent(); 
