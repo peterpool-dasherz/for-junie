@@ -365,29 +365,49 @@ function showFeature(feature) {
     // reminders!
 
     if (feature === "reminders") {
+        const reminders = [
+            {
+                icon: "💧",
+                title: "drink some water!",
+                text: "nhớ uống nước vô! anything but water hoài đi😠 tui lo đó, stay hydrated!!!"
+            },
+            {
+                icon: "🍽️",
+                title: "eat something!!!",
+                text: "này nha, tui hong có bên cạnh cô bây giờ được, đừng có bỏ bữa, đã không ăn sáng thì lunch ăn cho đủ với đừng nhịn bữa tối, nhớ kiếm cái gì bỏ bụng đó:(, tui xót lắm:(("
+            },
+            {
+                icon: "🔑",
+                title: "itemsssss!!!",
+                text: "nhớ cầm chìa khoá nhà và phòng, airpods, nếu lạnh thì cầm áo khoác chứ đừng có mặc của thằng nào đó 😠, về đây tui đưa áo tui cho, hứ!"
+            }
+        ];
+
+        const reminderCards = reminders.map(reminder => `
+            <article class = "reminder-card">
+                <div class = "reminder-icon" aria-hidden = "true">
+                    ${reminder.icon}
+                </div>
+                <div>
+                    <h2>${reminder.title}</h2>
+                    <p>${reminder.text}</p>
+                </div>
+            </article>
+        `).join("");
+
         content = `
-            <div class = "heart">🩷</div>
+            <div class = "heart">📝</div>
             <p class = "small-text">
-                just in case u forget
+                just in case u forget nè!
             </p>
-            <h1>reminders</h1>
-            <div class = "feature-message">
-                tui yêu cô nhiều nhất nèeee!!!
-                <br><br>
-                tui yêu cô nhiều hơn bất kì ai và thứ gì trên đời nàyyyy!!
-                <br><br>
-                và cô hong bao giờ phải nghi ngờ tình cảm của tui dành cho cô đâuuuu!!!
-                <br><br>
-                distance is just temporary, rồi mình sẽ được ở cạnh nhau tiếp nè!!!
-                <br><br>
-                cô hong có mất tui đâu, tui ở lại đến cuối với cô màaaa!!! hứa rồi á
-                <br><br>
-                and id say this an infinite amount of time, i love you the mostest of the most! 
-                <br><br>
-                <strong>
-                    to the power of infinity!
-                </strong>
+            <h1>little reminders</h1>
+            <p class = "gallery-intro">
+                a few things u should rmb nè!!!
+            </p>
+            <div class = "reminder-list">
+                ${reminderCards}
             </div>
+
         `;
     }
 
