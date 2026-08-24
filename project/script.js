@@ -91,6 +91,13 @@ async function loadSiteContent() {
         applyHomeContent();
     } catch (error) {
         console.error("Failed to load site content:", error);
+
+        const errorMessage = document.createElement("p");
+
+        errorMessage.className = "content-error";
+        errorMessage.setAttribute("role", "alert");
+        errorMessage.textContent = "chết ời lỗi ời, để tui sửa nha:("
+        welcomeCard.appendChild(errorMessage);
     }
 }
 
@@ -485,7 +492,9 @@ function showFeature(feature) {
             <div
                 class = "jar-message"
                 id = "jarMessage"
+                role = "status"
                 aria-live = "polite"
+                aria-atomic = "true"
             >
                 chọn 1 cái ở trên đi nè!
             </div>
@@ -560,33 +569,56 @@ function showFeature(feature) {
                     alt = "${image.alt}"
                 >
             `;
+
             document.body.appendChild(lightbox);
+            document.body.classList.add("lightbox-open");
+
             const closeButton = lightbox.querySelector(".lightbox-close");
-            closeButton.focus();
-            requestAnimationFrame (() => {
-                lightbox.classList.add("is-open");
-            });
+            const lightboxImage = lightbox.querySelector("img");
+
             const closeLightbox = () => {
                 lightbox.remove();
+                document.body.classList.remove("lightbox-open");
                 document.removeEventListener("keydown", closeOnEscape);
                 triggerButton.focus();
             };
-            lightbox.addEventListener("click", event => {
-                if (
-                    event.target === lightbox ||
-                    event.target.classList.contains("lightbox-close")
-                ) {
-                    closeLightbox();
-                }
-            });
+
             const closeOnEscape = event => {
                 if (event.key === "Escape") {
                     closeLightbox();
                 }
             };
+
+            lightbox.addEventListener("click", event => {
+                if (
+                    event.target === lightbox ||
+                    event.target === closeButton
+                ) {
+                    closeLightbox();
+                }
+            });
+
+            lightbox.addEventListener("keydown", event => {
+                if (event.key === "Tab") {
+                    event.preventDefault();
+                    closeButton.focus();
+                }
+            });
+
             document.addEventListener("keydown", closeOnEscape);
+
+            requestAnimationFrame(() => {
+                lightbox.classList.add("is-open");
+                closeButton.focus();
+            });
+
+            lightboxImage.addEventListener("load", () => {
+                lightboxImage.focus();
+            });
         });
     });
+
+
     const randomMessageButton = document.querySelector("#randomMessageButton");
     const jarMessage = document.querySelector("#jarMessage");
     const drawAnotherButton = document.querySelector("#drawAnotherButton");
