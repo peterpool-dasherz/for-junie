@@ -144,6 +144,45 @@ h1 {
     line-height: 1.5;
 }
 
+/* 404 page */
+
+.error-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.back-home-link {
+    display: inline-block;
+    margin-top: 24px;
+    padding: 15px 28px;
+
+    color: white;
+    background: #f0a4bd;
+    border-radius: 50px;
+
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+
+    box-shadow: 0 8px 20px rgba(220, 120, 155, 0.25);
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.back-home-link:hover {
+    transform: translateY(-3px);
+    background: #e98eae;
+    box-shadow: 0 12px 25px rgba(220, 120, 155, 0.3);
+}
+
+.back-home-link:focus-visible {
+    outline: 3px solid #c95d86;
+    outline-offset: 4px;
+}
+
 button {
     border: none;
 
