@@ -645,11 +645,34 @@ function showFeature(feature) {
     const jarVisual = document.querySelector("#jarVisual");
 
     let selectedSituationKey = null;
+    const lastMessageBySituation = {};
 
-    function getRandomMessage(situation) {
-        return situation.messages[
-            Math.floor(Math.random() * situation.messages.length)
-        ];
+    function getRandomMessage(situationKey) {
+        const situation = messageJar[situationKey];
+        if (!situation || situation.messages.length === 0) {
+            return "";
+        }
+
+        if (situation.messages.length === 1) {
+            const onlyMessage = situation.messages[0];
+            lastMessageBySituation[situationKey] = onlyMessage;
+            return onlyMessage;
+        }
+
+        const previousMessage = lastMessageBySituation[situationKey];
+        
+        let randomMessage;
+
+        do {
+            randomMessage = 
+                situation.messages[
+                    Math.floor(Math.random() * situation.messages.length)
+                ];
+        } while (randomMessage === previousMessage);
+
+        lastMessageBySituation[situationKey] = randomMessage;
+
+        return randomMessage;
     } 
 
     function displayJarMessage(message) {
@@ -687,7 +710,7 @@ function showFeature(feature) {
         }
 
         selectedSituationKey = situationKey;
-        displayJarMessage(getRandomMessage(situation));
+        displayJarMessage(getRandomMessage(situationKey));
 
         document.querySelectorAll(".jar-situation").forEach(button => {
             button.classList.toggle(
