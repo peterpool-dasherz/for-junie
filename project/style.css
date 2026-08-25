@@ -521,6 +521,14 @@ button:active {
     color: #8f4d68;
 }
 
+.jar-situation.is-selected {
+    color: white;
+    background: #e98eae;
+    border-color: #e98eae;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(220, 120, 155, 0.2);
+}
+
 .jar-message {
     min-height: 90px;
     display: flex;

@@ -644,49 +644,80 @@ function showFeature(feature) {
     const drawAnotherButton = document.querySelector("#drawAnotherButton");
     const jarVisual = document.querySelector("#jarVisual");
 
+    let selectedSituationKey = null;
+
+    function getRandomMessage(situation) {
+        return situation.messages[
+            Math.floor(Math.random() * situation.messages.length)
+        ];
+    } 
+
     function displayJarMessage(message) {
         jarMessage.textContent = message;
         jarMessage.classList.remove("jar-message-pop");
-        jarVisual.classList.remove("jar-shake");
+
+        if (jarVisual) {
+            jarVisual.classList.remove("jar-shake");
+        }
         void jarMessage.offsetWidth;
-        void jarVisual.offsetWidth;
+
+        if (jarVisual) {
+            void jarVisual.offsetWidth;
+        }
+
         jarMessage.classList.add("jar-message-pop");
-        jarVisual.classList.add("jar-shake");
+
+        if (jarVisual) {
+            jarVisual.classList.add("jar-shake");
+        }
+    }
+
+    function selectRandomSituation() {
+        const situationKeys = Object.keys(messageJar);
+        return situationKeys[
+            Math.floor(Math.random() * situationKeys.length)
+        ];
+    }
+
+    function showSituationMessage(situationKey) {
+        const situation = messageJar[situationKey];
+
+        if (!situation) {
+            return;
+        }
+
+        selectedSituationKey = situationKey;
+        displayJarMessage(getRandomMessage(situation));
+
+        document.querySelectorAll(".jar-situation").forEach(button => {
+            button.classList.toggle(
+                    "is-selected",
+                    button.dataset.situation === situationKey
+            );
+        });
     }
 
     if (randomMessageButton) {
         randomMessageButton.addEventListener("click", function () {
-            const situations = Object.values(messageJar);
-            const randomSituation = 
-                situations[Math.floor(Math.random() * situations.length)];
-            const randomMessage = 
-                randomSituation.messages[
-                    Math.floor(Math.random() * randomSituation.messages.length)
-                ];
-            displayJarMessage(randomMessage);
+            const randomSituationKey = selectRandomSituation();
+            showSituationMessage(randomSituationKey);
         });
     }
+
     const jarSituationButtons = document.querySelectorAll(".jar-situation");
+
     jarSituationButtons.forEach(button => {
         button.addEventListener("click", function () {
-            const situation = messageJar[this.dataset.situation];
-            const randomMessage = 
-                situation.messages[
-                    Math.floor(Math.random() * situation.messages.length)
-                ];
-            displayJarMessage(randomMessage);
+            showSituationMessage(this.dataset.situation);
         });
     });
+
     if (drawAnotherButton) {
         drawAnotherButton.addEventListener("click", function () {
-            const situations = Object.values(messageJar);
-            const randomSituation = 
-                situations[Math.floor(Math.random() * situations.length)];
-            const randomMessage = 
-                randomSituation.messages[
-                    Math.floor(Math.random() * randomSituation.messages.length)
-                ];
-            displayJarMessage(randomMessage);
+            if (!selectedSituationKey) {
+                selectedSituationKey = selectRandomSituation();
+            }
+            showSituationMessage(selectedSituationKey);
         });
     }
 }
