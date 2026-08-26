@@ -1,8 +1,18 @@
+const SUPABASE_URL = 
+    "https://fivxqdrbdyvwuleafhgt.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = 
+    "sb_publishable_Vc-1StuMqGnqUl5sMNePkg_MRDXHw7X";
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+);
+
+
 const startButton = document.querySelector("#startButton");
 const welcomeCard = document.querySelector(".welcome-card");
 let siteContent = {};
 let hugCount = 0;
-const messageJar = {
+let messageJar = {
     miss: {
         label: "when you miss me",
         messages: [
@@ -76,6 +86,80 @@ const messageJar = {
             "anh yêu emmmmm!!! <333"
         ]
     }
+};
+
+async function loadMessageJarFromDatabase() {
+    const {data, error} = await supabaseClient
+        .from("message_categories")
+        .select(`
+            name,
+            label,
+            messages (
+                message
+            )
+        `)
+        .order("id", {ascending: true});
+    
+    if (error) {
+        throw error;
+    }
+
+    if (!data || data.length === 0) {
+        return;
+    }
+
+    messageJar = Object.fromEntries(
+        data.map(category => [
+            category.name,
+            {
+                label: category.label,
+                messages: category.messages.map(item => item.message)
+            }
+        ])
+    );
+}
+
+async function signUp(email, password) {
+    const {data, error} = await supabaseClient.auth.signUp({
+        email,
+        password
+    });
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
+async function signIn(email, password) {
+    const {data, error} = 
+        await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
+async function signOut() {
+    const {error} = await supabaseClient.auth.signOut();
+
+    if (error) {
+        throw error;
+    }
+}
+
+async function getCurrentUser() {
+    const {
+        data: {user}
+    } = await supabaseClient.auth.getUser();
+    
+    return user;
 }
 
 async function loadSiteContent() {
@@ -99,6 +183,168 @@ async function loadSiteContent() {
         errorMessage.textContent = "chết ời lỗi ời, để tui sửa nha:("
         welcomeCard.appendChild(errorMessage);
     }
+}
+
+async function checkAuth() {
+    const user = await getCurrentUser();
+
+    if (!user) {
+        showLoginScreen();
+        return;
+    }
+
+    try {
+        await loadMessageJarFromDatabase();
+    } catch (error) {
+        console.error("Failed to load messages from database:", error);
+    }
+
+    showPrivateApp(user);
+}
+
+supabaseClient.auth.onAuthStateChange((_event, session) => {
+    if (!session?.user) {
+        showLoginScreen();
+        return;
+    }
+
+    void (async () => {
+        try {
+            await loadMessageJarFromDatabase();
+        } catch (error) {
+            console.error(
+                "Failed to load messages from database:",
+                error
+            );
+        }
+        showPrivateApp(session.user);
+    })();
+});
+
+function showLoginScreen() {
+    welcomeCard.innerHTML = `
+        <div class = "heart">🔐</div>
+        <p class = "small-text">
+            just for us onlyyy!!!
+        </p>
+        <h1>private space</h1>
+        <form id = "loginForm">
+            <input
+                id = "emailInput"
+                type = "email"
+                placeholder = "email"
+                autocomplete = "email"
+                required
+            >
+            <input
+                id = "passwordInput"
+                type = "password"
+                placeholder = "password"
+                autocomplete = "current-password"
+                required
+            >
+            <button type = "submit">
+                log in
+            </button>
+            <button
+                id = "signUpButton"
+                class = "back-button"
+                type = "button"
+            >
+                create account
+            </button>
+            <p
+                id = "authMessage"
+                class = "auth-message"
+                role = "status"
+                aria-live = "polite"
+            ></p>
+        </form>
+    `;
+    const loginForm = document.querySelector("#loginForm");
+    const signUpButton = document.querySelector("#signUpButton");
+    const authMessage = document.querySelector("#authMessage");
+
+    loginForm.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const email = document.querySelector("#emailInput").value;
+        const password = document.querySelector("#passwordInput").value;
+
+        authMessage.textContent = "logging in...";
+        try {
+                await signIn(email, password);
+                authMessage.textContent = "";
+        } catch (error) {
+            authMessage.textContent = error.message;
+        }
+    });
+
+    signUpButton.addEventListener("click", async () => {
+        const email = document.querySelector("#emailInput").value;
+        const password = document.querySelector("#passwordInput").value;
+
+        if (!email || !password) {
+            authMessage.textContent = 
+                "nhập mail với pass nè!";
+            return;
+        }
+
+        authMessage.textContent = "creating your account...";
+
+        try {
+            await signUp(email, password);
+            authMessage.textContent = 
+                "tạo được acc rồi nè, check mail nhaaa!!!"
+        } catch (error) {
+            authMessage.textContent = error.message;
+        }
+    });
+}
+
+function showPrivateApp(user) {
+    welcomeCard.innerHTML = `
+        <div class = "heart">🩷</div>
+        <p class = "small-text">
+            he nhô! welcome back!
+        </p>
+        <h1>hello junieee!!!</h1>
+        <p class = "intro">
+            nhớ tui thì ở đây xíu nè!
+        </p>
+        <div class = "home-photo-banner">
+            <img
+                src = "assets/images/FullSizeRender 2.jpg"
+                alt = "a photo of us"
+            >
+        </div>
+        <button id = "continueButton" type = "button">
+            enter our space!
+        </button>
+        <button
+            id = "logoutButton"
+            class = "back-button"
+            type = "button"
+        >
+            log out
+        </button>
+    `;
+
+    document
+        .querySelector("#continueButton")
+        .addEventListener("click", () => {
+            showMenu();
+        });
+    document
+        .querySelector("#logoutButton")
+        .addEventListener("click", async () => {
+            try {
+                await signOut();
+            } catch (error) {
+                console.error("Failed to log out:", error);
+            }
+        });
+
 }
 
 function applyHomeContent() {
@@ -756,4 +1002,4 @@ startButton.addEventListener("click", function () {
     }, 300);
 });
 
-loadSiteContent(); 
+loadSiteContent();

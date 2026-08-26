@@ -144,6 +144,81 @@ h1 {
     line-height: 1.5;
 }
 
+/* Login screen */
+
+#loginForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: min(100%, 340px);
+    margin: 26px auto 0;
+}
+
+#loginForm input {
+    width: 100%;
+    min-height: 50px;
+    padding: 14px 16px;
+
+    color: #633b4b;
+    background: #fff8fa;
+    border: 1px solid #f5c2d3;
+    border-radius: 15px;
+
+    font: inherit;
+    font-size: 15px;
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+#loginForm input::placeholder {
+    color: #b57b91;
+}
+
+#loginForm input:focus {
+    background: white;
+    border-color: #d96d96;
+    box-shadow: 0 0 0 4px rgba(240, 164, 189, 0.22);
+}
+
+#loginForm button {
+    width: 100%;
+    min-height: 50px;
+}
+
+#loginForm .back-button {
+    margin-top: 0;
+    background: #f7c5d5;
+}
+
+#loginForm .back-button:hover {
+    background: #efb2c8;
+}
+
+.auth-message {
+    min-height: 22px;
+    margin-top: 4px;
+
+    color: #8f4d68;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+@media (max-width: 500px) {
+    #loginForm {
+        width: 100%;
+        margin-top: 22px;
+    }
+
+    #loginForm input {
+        min-height: 48px;
+        font-size: 16px;
+    }
+}
+
 /* 404 page */
 
 .error-card {
