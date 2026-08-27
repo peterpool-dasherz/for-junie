@@ -88,6 +88,24 @@ let messageJar = {
     }
 };
 
+let reminders = [
+    {
+        icon: "💧",
+        title: "drink some water!",
+        text: "nhớ uống nước vô! anything but water hoài đi😠 tui lo đó, stay hydrated!!!"
+    },
+    {
+        icon: "🍽️",
+        title: "eat something!!!",
+        text: "này nha, tui hong có bên cạnh cô bây giờ được, đừng có bỏ bữa, đã không ăn sáng thì lunch ăn cho đủ với đừng nhịn bữa tối, nhớ kiếm cái gì bỏ bụng đó:(, tui xót lắm:(("
+    },
+    {
+        icon: "🔑",
+        title: "itemsssss!!!",
+        text: "nhớ cầm chìa khoá nhà và phòng, airpods, nếu lạnh thì cầm áo khoác chứ đừng có mặc của thằng nào đó 😠, về đây tui đưa áo tui cho, hứ!"
+    }
+];
+
 async function loadMessageJarFromDatabase() {
     const {data, error} = await supabaseClient
         .from("message_categories")
@@ -146,6 +164,52 @@ async function signIn(email, password) {
     return data;
 }
 
+async function loadRemindersFromDatabase() {
+    const {data, error} = await supabaseClient
+        .from("reminders")
+        .select("icon, title, description")
+        .order("id", {ascending: true});
+    
+    if (error) {
+        throw error;
+    }
+
+    if (!data || data.length === 0) {
+        return;
+    }
+
+    reminders = data.map(reminder => ({
+        icon: reminder.icon,
+        title: reminder.title,
+        text: reminder.description
+    }));
+}
+
+async function loadPhotosFromDatabase() {
+    const {data, error} = await supabaseClient
+        .from("photos")
+        .select("image_url, alt_text, caption")
+        .order("id", {ascending: true});
+    
+    if (error) {
+        throw error;
+    }
+
+    if (!data || data.length === 0) {
+        return;
+    }
+
+    if (!siteContent.photos) {
+        siteContent.photos = {};
+    }
+
+    siteContent.photos.items = data.map(photo => ({
+        src: photo.image_url,
+        alt: photo.alt_text,
+        caption: photo.caption
+    }));
+}
+
 async function signOut() {
     const {error} = await supabaseClient.auth.signOut();
 
@@ -160,6 +224,27 @@ async function getCurrentUser() {
     } = await supabaseClient.auth.getUser();
     
     return user;
+}
+
+async function isAdmin() {
+    const user = await getCurrentUser();
+    
+    if (!user) {
+        return false;
+    }
+
+    const {data, error} = await supabaseClient
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+    
+    if (error) {
+        console.error("Failed to check admin role:", error);
+        return false;
+    }
+
+    return data.role === "admin";
 }
 
 async function loadSiteContent() {
@@ -185,6 +270,8 @@ async function loadSiteContent() {
     }
 }
 
+const siteContentReady = loadSiteContent();
+
 async function checkAuth() {
     const user = await getCurrentUser();
 
@@ -194,12 +281,15 @@ async function checkAuth() {
     }
 
     try {
+        await siteContentReady;
         await loadMessageJarFromDatabase();
+        await loadRemindersFromDatabase();
+        await loadPhotosFromDatabase();
     } catch (error) {
         console.error("Failed to load messages from database:", error);
     }
 
-    showPrivateApp(user);
+    await showPrivateApp(user);
 }
 
 supabaseClient.auth.onAuthStateChange((_event, session) => {
@@ -210,14 +300,17 @@ supabaseClient.auth.onAuthStateChange((_event, session) => {
 
     void (async () => {
         try {
+            await siteContentReady;
             await loadMessageJarFromDatabase();
+            await loadRemindersFromDatabase();
+            await loadPhotosFromDatabase();
         } catch (error) {
             console.error(
                 "Failed to load messages from database:",
                 error
             );
         }
-        showPrivateApp(session.user);
+        await showPrivateApp(session.user);
     })();
 });
 
@@ -302,7 +395,8 @@ function showLoginScreen() {
     });
 }
 
-function showPrivateApp(user) {
+async function showPrivateApp(user) {
+    const userIsAdmin = await isAdmin();
     welcomeCard.innerHTML = `
         <div class = "heart">🩷</div>
         <p class = "small-text">
@@ -321,6 +415,19 @@ function showPrivateApp(user) {
         <button id = "continueButton" type = "button">
             enter our space!
         </button>
+        ${
+            userIsAdmin
+                ? `
+                    <button
+                        id = "adminButton"
+                        class = "secondary-button"
+                        type = "button"
+                    >
+                        admin space
+                    </button>
+                `
+                : ""
+        }
         <button
             id = "logoutButton"
             class = "back-button"
@@ -335,6 +442,15 @@ function showPrivateApp(user) {
         .addEventListener("click", () => {
             showMenu();
         });
+    
+    const adminButton = document.querySelector("#adminButton");
+
+    if (adminButton) {
+        adminButton.addEventListener("click", () => {
+            showAdminDashboard();
+        });
+    }
+
     document
         .querySelector("#logoutButton")
         .addEventListener("click", async () => {
@@ -344,7 +460,92 @@ function showPrivateApp(user) {
                 console.error("Failed to log out:", error);
             }
         });
+}
 
+async function showAdminDashboard() {
+    welcomeCard.innerHTML = `
+        <div class = "heart">⚙️</div>
+        <p class = "small-text">
+            cái này chỉ có peter thấy thuiiii!!!
+        </p>
+        <h1>admin space</h1>
+        <p class = "intro">
+            manange page nè!
+        </p>
+        <div
+            id = "adminContent"
+            class = "admin-content"
+            aria-live = "polite"
+        >
+            loading everything...
+        </div>
+        <button
+            id = "adminBackButton"
+            class = "back-button"
+            type = "button"
+        >
+            về lại welcome page
+        </button>
+    `;
+
+    document
+        .querySelector("#adminBackButton")
+        .addEventListener("click", async () => {
+            const user = await getCurrentUser();
+
+            if (user) {
+                await showPrivateApp(user);
+            }
+        });
+    const adminContent = document.querySelector("#adminContent");
+    
+    try {
+        const [
+            {data: categories, error: categoriesError},
+            {data: remindersData, error: remindersError},
+            {data: photosData, error: photosError}
+        ] = await Promise.all([
+            supabaseClient
+                .from("message_categories")
+                .select("id, name, label")
+                .order("id", {ascending: true}),
+            supabaseClient
+                .from("reminders")
+                .select("id, name, label")
+                .order("id", {ascending: true}),
+            supabaseClient
+                .from("photos")
+                .select("id, image_url, alt_text, caption")
+                .order("id", {ascending: true})
+        ]);
+
+        if (categoriesError) {
+            throw categoriesError;
+        }
+
+        if (remindersError) {
+            throw remindersError;
+        }
+
+        if (photosError) {
+            throw photosError;
+        }
+
+        adminContent.innerHTML = `
+            <section class = "admin-section">
+                <h2>message categories</h2>
+                <p>${categories?.length || 0} categories stored</p>
+            </section>
+            <section class = "admin-section">
+                <h2>reminders</h2>
+                <p>${remindersData?.length || 0} photos stored</p>
+            </section>
+        `;
+    } catch (error) {
+        console.error("Failed to load admin data:", error);
+        adminContent.textContent = 
+            "could not load the admin data right now:(";
+    }
 }
 
 function applyHomeContent() {
@@ -611,24 +812,6 @@ function showFeature(feature) {
     // reminders!
 
     if (feature === "reminders") {
-        const reminders = [
-            {
-                icon: "💧",
-                title: "drink some water!",
-                text: "nhớ uống nước vô! anything but water hoài đi😠 tui lo đó, stay hydrated!!!"
-            },
-            {
-                icon: "🍽️",
-                title: "eat something!!!",
-                text: "này nha, tui hong có bên cạnh cô bây giờ được, đừng có bỏ bữa, đã không ăn sáng thì lunch ăn cho đủ với đừng nhịn bữa tối, nhớ kiếm cái gì bỏ bụng đó:(, tui xót lắm:(("
-            },
-            {
-                icon: "🔑",
-                title: "itemsssss!!!",
-                text: "nhớ cầm chìa khoá nhà và phòng, airpods, nếu lạnh thì cầm áo khoác chứ đừng có mặc của thằng nào đó 😠, về đây tui đưa áo tui cho, hứ!"
-            }
-        ];
-
         const reminderCards = reminders.map(reminder => `
             <article class = "reminder-card">
                 <div class = "reminder-icon" aria-hidden = "true">
@@ -1002,4 +1185,3 @@ startButton.addEventListener("click", function () {
     }, 300);
 });
 
-loadSiteContent();
