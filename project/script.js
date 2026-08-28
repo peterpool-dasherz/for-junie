@@ -164,6 +164,29 @@ async function signIn(email, password) {
     return data;
 }
 
+async function sendPasswordReset(email) {
+    const {error} = await supabaseClient.auth.resetPasswordForEmail(
+        email,
+        {
+            redirectTo: `${window.location.origin}${window.location.pathname}`
+        }
+    );
+
+    if (error) {
+        throw error;
+    }
+}
+
+async function updatePassword(newPassword) {
+    const {error} = await supabaseClient.auth.updateUser({
+        password: newPassword
+    });
+
+    if (error) {
+        throw error;
+    }
+}
+
 async function loadRemindersFromDatabase() {
     const {data, error} = await supabaseClient
         .from("reminders")
@@ -293,6 +316,12 @@ async function checkAuth() {
 }
 
 supabaseClient.auth.onAuthStateChange((_event, session) => {
+    if (_event === "PASSWORD_RECOVERY") {
+        showPasswordResetScreen();
+        return;
+    }
+
+
     if (!session?.user) {
         showLoginScreen();
         return;
@@ -304,15 +333,17 @@ supabaseClient.auth.onAuthStateChange((_event, session) => {
             await loadMessageJarFromDatabase();
             await loadRemindersFromDatabase();
             await loadPhotosFromDatabase();
+            await showPrivateApp(session.user);
         } catch (error) {
             console.error(
                 "Failed to load messages from database:",
                 error
             );
         }
-        await showPrivateApp(session.user);
     })();
 });
+
+checkAuth();
 
 function showLoginScreen() {
     welcomeCard.innerHTML = `
@@ -340,6 +371,13 @@ function showLoginScreen() {
                 log in
             </button>
             <button
+                id = "forgotPasswordButton"
+                class = "text-button"
+                type = "button"
+            >
+                quên password???
+            </button>
+            <button
                 id = "signUpButton"
                 class = "back-button"
                 type = "button"
@@ -357,6 +395,27 @@ function showLoginScreen() {
     const loginForm = document.querySelector("#loginForm");
     const signUpButton = document.querySelector("#signUpButton");
     const authMessage = document.querySelector("#authMessage");
+    const forgotPasswordButton = document.querySelector(
+        "#forgotPasswordButton"
+    );
+    forgotPasswordButton.addEventListener("click", async () => {
+        const email = document.querySelector("#emailInput").value;
+
+        if (!email) {
+            authMessage.textContent =
+                "enter mail trước nè!!!";
+            return;
+        }
+        authMessage.textContent = "sending reset email...";
+
+        try {
+            await sendPasswordReset(email);
+            authMessage.textContent = 
+                "check your email nha!!!";
+        } catch (error) {
+            authMessage.textContent = error.message;
+        }
+    });
 
     loginForm.addEventListener("submit", async event => {
         event.preventDefault();
@@ -391,6 +450,56 @@ function showLoginScreen() {
                 "tạo được acc rồi nè, check mail nhaaa!!!"
         } catch (error) {
             authMessage.textContent = error.message;
+        }
+    });
+}
+
+function showPasswordResetScreen() {
+    welcomeCard.innerHTML = `
+        <div class = "heart">🔑</div>
+        <p class = "small-text">
+            make a new password ne!
+        </p>
+        <h1>reset password</h1>
+        <form id = "resetPasswordForm">
+            <input
+                id = "newPasswordInput"
+                type = "password"
+                placeholder = "new password"
+                autocomplete = "new-password"
+                minlength = "6"
+                required
+            >
+            <button type = "submit">
+                save new password
+            </button>
+            <p
+                id = "resetMessage"
+                class = "auth-message"
+                role = "status"
+                aria-live = "polite"
+            ></p>
+        </form>
+    `;
+
+    const resetForm = document.querySelector("#resetPasswordForm");
+    const newPasswordInput = document.querySelector("#newPasswordInput");
+    const resetMessage = document.querySelector("#resetMessage");
+
+    resetForm.addEventListener("submit", async event => {
+        event.preventDefault();
+        const newPassword = newPasswordInput.value;
+        resetMessage.textContent = 
+            "saving your new password...";
+        try {
+            await updatePassword(newPassword);
+            resetMessage.textContent =
+                "password updated rồi nha! use this one to log in từ giờ nhen!";
+            setTimeout(() => {
+                showLoginScreen();
+            }, 1500);
+        } catch (error) {
+            resetMessage.textContent = error.message;
         }
     });
 }
