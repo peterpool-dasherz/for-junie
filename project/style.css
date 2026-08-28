@@ -237,6 +237,81 @@ h1 {
     line-height: 1.5;
 }
 
+.admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.admin-form input,
+.admin-form textarea {
+    width: 100%;
+    padding: 13px 15px;
+
+    color: #633b4b;
+    background: #fff8fa;
+    border: 1px solid #f5c2d3;
+    border-radius: 15px;
+
+    font: inherit;
+    font-size: 15px;
+    outline: none;
+    resize: vertical;
+}
+
+.admin-form input:focus,
+.admin-form textarea:focus {
+    border-color: #d96d96;
+    box-shadow: 0 0 0 4px rgba(240, 164, 189, 0.22);
+}
+
+.admin-form textarea {
+    min-height: 110px;
+    line-height: 1.5;
+}
+
+.admin-reminder-heading {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 6px;
+}
+
+.admin-reminder-heading span {
+    font-size: 23px;
+    line-height: 1;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 13px;
+}
+
+.admin-actions button {
+    padding: 9px 14px;
+    font-size: 13px;
+}
+
+.admin-actions .delete-reminder-button {
+    background: #f7c5d5;
+    color: #8f4d68;
+}
+
+.admin-actions .delete-reminder-button:hover {
+    background: #efb2c8;
+}
+
+.admin-empty {
+    padding: 16px;
+    color: #b57b91;
+    background: #fff5f8;
+    border: 1px dashed #f0a4bd;
+    border-radius: 16px;
+    text-align: center;
+}
+
 @media (max-width: 500px) {
     .admin-content {
         gap: 10px;
@@ -253,6 +328,20 @@ h1 {
 
     .admin-section p {
         font-size: 13px;
+    }
+
+    .admin-form {
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .admin-form input,
+    .admin-form textarea {
+        font-size: 16px;
+    }
+
+    .admin-actions button {
+        flex: 1;
     }
 }
 

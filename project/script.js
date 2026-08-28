@@ -579,14 +579,54 @@ async function showAdminDashboard() {
         </p>
         <h1>admin space</h1>
         <p class = "intro">
-            manange page nè!
+            manage reminders nè!
         </p>
+        <form id = "reminderForm" class = "admin-form">
+            <input
+                id = "reminderId"
+                type = "hidden"
+            >
+            <input
+                id = "reminderIcon"
+                type = "text"
+                placeholder = "icon, like 💧"
+                required
+            >
+            <input
+                id = "reminderTitle"
+                type = "text"
+                placeholder = "reminder title"
+                required
+            >
+            <textarea
+                id = "reminderDescription"
+                placeholder = "reminder description"
+                rows = "4"
+                required
+            ></textarea>
+            <button type = "submit">
+                save reminder
+            </button>
+            <button
+                id = "cancelReminderButton"
+                class = "back-button"
+                type = "button"
+            >
+                cancel
+            </button>
+            <p
+                id = "adminMessage"
+                class = "auth-message"
+                role = "status"
+                aria-live = "polite"
+            ></p>
+        </form>
         <div
-            id = "adminContent"
+            id = "reminderAdminList"
             class = "admin-content"
             aria-live = "polite"
         >
-            loading everything...
+            loading reminders...
         </div>
         <button
             id = "adminBackButton"
@@ -597,6 +637,165 @@ async function showAdminDashboard() {
         </button>
     `;
 
+    const reminderForm = document.querySelector("#reminderForm");
+    const reminderId = document.querySelector("#reminderId");
+    const reminderIcon = document.querySelector("#reminderIcon");
+        const reminderTitle = document.querySelector("#reminderTitle");
+        const reminderDescription = document.querySelector("#reminderDescription");
+        const cancelReminderButton = document.querySelector("#cancelReminderButton");
+    const adminMessage = document.querySelector("#adminMessage");
+    const reminderAdminList = document.querySelector("#reminderAdminList");
+
+    let remindersData = [];
+
+    function clearReminderForm() {
+        reminderForm.reset();
+        reminderId.value = "";
+        cancelReminderButton.hidden = true;
+    }
+
+    function renderReminders() {
+        if (remindersData.length === 0) {
+            reminderAdminList.innerHTML = `
+                <p class = "admin-empty">
+                    no reminders yet!
+                </p>
+            `;
+            return;
+        }
+        reminderAdminList.innerHTML = remindersData.map(reminder => `
+            <article class = "admin-section">
+                <div class = "admin-reminder-heading">
+                    <span aria-hidden = "true">
+                        ${reminder.icon || "📝"}
+                    </span>
+                    <h2>${reminder.title}</h2>
+                </div>
+                <p>${reminder.description}</p>
+                <div class = "admin-actions">
+                    <button
+                        class = "edit-reminder-button"
+                        type = "button"
+                        data-reminder-id = "${reminder.id}"
+                    >
+                        edit
+                    </button>
+                    <button
+                        class = "delete-reminder-button"
+                        type = "button"
+                        data-reminder-id = "${reminder.id}"
+                    >
+                        delete
+                    </button>
+                </div>
+            </article>
+            `).join("");
+
+            document
+                .querySelectorAll(".edit-reminder-button")
+                .forEach(button => {
+                    button.addEventListener("click", () => {
+                        const reminder = remindersData.find(
+                            item => item.id === Number(button.dataset.reminderId)
+                        );
+
+                        if (!reminder) {
+                            return;
+                        }
+                        reminderId.value = reminder.id;
+                        reminderIcon.value = reminder.icon || "";
+                        reminderTitle.value = reminder.title;
+                        reminderDescription.value = reminder.description;
+                        cancelReminderButton.hidden = false;
+                        reminderIcon.focus();
+                    });
+                });
+            
+                document
+                    .querySelectorAll(".delete-reminder-button")
+                    .forEach(button => {
+                        button.addEventListener("click", async () => {
+                            const shouldDelete = window.confirm(
+                                "delete this reminder?"
+                            );
+
+                            if (!shouldDelete) {
+                                return;
+                            }
+
+                            adminMessage.textContent = "deleting reminder...";
+                            const {error} = await supabaseClient
+                                .from("reminders")
+                                .delete()
+                                .eq("id", Number(button.dataset.reminderId));
+                            
+                            if (error) {
+                                adminMessage.textContent = error.message;
+                                return;
+                            }
+                            adminMessage.textContent = 
+                                "reminder deleted!";
+                            await loadAdminReminders();
+                        });
+                    });
+    }
+
+    async function loadAdminReminders() {
+        const {data, error} = await supabaseClient
+            .from("reminders")
+            .select("id, icon, title, description")
+            .order("id", {ascending: true});
+
+        if (error) {
+            throw error;
+        }
+
+        remindersData = data || [];
+        renderReminders();
+    }
+
+    reminderForm.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const reminderData = {
+            icon: reminderIcon.value.trim(),
+            title: reminderTitle.value.trim(),
+            description: reminderDescription.value.trim()
+        };
+
+        adminMessage.textContent = "saving reminder...";
+
+        const editingId = Number(reminderId.value);
+        const request = editingId
+            ? supabaseClient
+                .from("reminders")
+                .update(reminderData)
+                .eq("id", editingId)
+            : supabaseClient
+                .from("reminders")
+                .insert(reminderData);
+
+        const {error} = await request;
+
+        if (error) {
+            adminMessage.textContent = error.message;
+            return;
+        }
+
+        adminMessage.textContent = editingId
+            ? "reminder updated!"
+            : "reminder added!";
+
+        clearReminderForm();
+        await loadAdminReminders();
+        await loadRemindersFromDatabase();
+    });
+
+    cancelReminderButton.addEventListener("click", () => {
+        clearReminderForm();
+        adminMessage.textContent = "";
+    });
+
     document
         .querySelector("#adminBackButton")
         .addEventListener("click", async () => {
@@ -606,53 +805,13 @@ async function showAdminDashboard() {
                 await showPrivateApp(user);
             }
         });
-    const adminContent = document.querySelector("#adminContent");
+    cancelReminderButton.hidden = true;
     
     try {
-        const [
-            {data: categories, error: categoriesError},
-            {data: remindersData, error: remindersError},
-            {data: photosData, error: photosError}
-        ] = await Promise.all([
-            supabaseClient
-                .from("message_categories")
-                .select("id, name, label")
-                .order("id", {ascending: true}),
-            supabaseClient
-                .from("reminders")
-                .select("id, name, label")
-                .order("id", {ascending: true}),
-            supabaseClient
-                .from("photos")
-                .select("id, image_url, alt_text, caption")
-                .order("id", {ascending: true})
-        ]);
-
-        if (categoriesError) {
-            throw categoriesError;
-        }
-
-        if (remindersError) {
-            throw remindersError;
-        }
-
-        if (photosError) {
-            throw photosError;
-        }
-
-        adminContent.innerHTML = `
-            <section class = "admin-section">
-                <h2>message categories</h2>
-                <p>${categories?.length || 0} categories stored</p>
-            </section>
-            <section class = "admin-section">
-                <h2>reminders</h2>
-                <p>${remindersData?.length || 0} photos stored</p>
-            </section>
-        `;
+        await loadAdminReminders();
     } catch (error) {
         console.error("Failed to load admin data:", error);
-        adminContent.textContent = 
+        reminderAdminList.textContent = 
             "could not load the admin data right now:(";
     }
 }
