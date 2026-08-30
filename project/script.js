@@ -629,6 +629,13 @@ async function showAdminDashboard() {
             loading reminders...
         </div>
         <button
+            id = "messageManagerButton"
+            class = "secondary-button"
+            type = "button"
+        >
+            manage messages
+        </button>
+        <button
             id = "adminBackButton"
             class = "back-button"
             type = "button"
@@ -797,6 +804,12 @@ async function showAdminDashboard() {
     });
 
     document
+        .querySelector("#messageManagerButton")
+        .addEventListener("click", () => {
+            showMessageManager();
+        });
+
+    document
         .querySelector("#adminBackButton")
         .addEventListener("click", async () => {
             const user = await getCurrentUser();
@@ -813,6 +826,216 @@ async function showAdminDashboard() {
         console.error("Failed to load admin data:", error);
         reminderAdminList.textContent = 
             "could not load the admin data right now:(";
+    }
+}
+
+async function showMessageManager() {
+    welcomeCard.innerHTML = `
+        <div class = "heart">💌</div>
+        <p class = "small-text">
+            cái chỗ này chỉ có peter chỉnh được hoi!
+        </p>
+        <h1>message manager</h1>
+        <p class = "intro">
+            thêm message vô đúng categories nè!
+        </p>
+        <form id = "messageForm" class = "admin-form">
+            <select id = "messageCategory" required>
+                <option value = "">choose a category</option>
+            </select>
+            <textarea>
+                id = "messageText"
+                placeholder = "write a message..."
+                rows = "5"
+                required
+            ></textarea>
+            <button type = "submit">
+                add message
+            </button>
+            <p
+                id = "messageAdminStatus"
+                class = "auth-message"
+                aria-live = "polite"
+            ></p>
+        </form>
+        <div
+            id = "messageAdminList"
+            class = "admin-content"
+            aria-live = "polite"
+        >
+            loading messages...
+        </div>
+        <button
+            id = "messageManagerBackButton"
+            class = "back-button"
+            type = "button"
+        >
+            back to admin space
+        </button>
+    `;
+    const categorySelect = 
+        document.querySelector("#messageCategory");
+    const messageForm = 
+        document.querySelector("#messageForm");
+    const messageText =
+        document.querySelector("#messageText");
+    const messageAdminStatus =
+        document.querySelector("#messageAdminStatus");
+    const messageAdminList =
+        document.querySelector("#messageAdminList");
+    
+    let categories = [];
+    let messages = [];
+
+    async function loadMessageManagerData() {
+        const {data, error} = await supabaseClient
+            .from("message_categories")
+            .select(`
+                id,
+                name,
+                label,
+                messages (
+                    id,
+                    message
+                )
+            `)
+            .order("id", {ascending: true});
+        
+        if (error) {
+            throw error;
+        }
+
+        categories = data || [];
+        categorySelect.innerHTML = `
+            <option value = "">choose a category</option>
+            ${categories.map(category => `
+                <option value = "${categoru.id}">
+                    ${category.label}
+                </option
+            `).join("")}
+        `;
+        messages = categories.flatMap(category =>
+            category.messages.map(message => ({
+                ...message,
+                categoryLabel: category.label
+            }))
+        );
+
+        renderMessages();
+    }
+
+    function renderMessages() {
+        if (messages.length === 0) {
+            messageAdminList.innerHTML = `
+                <p class = "admin-empty">
+                    no messages yet!
+                </p>
+            `;
+            return;
+        }
+        messageAdminList.innerHTML = messages.map(item => `
+                <article class = "admin-section"
+                    <p class = "message-category"
+                        ${item.categoryLabel}
+                    </p>
+                    <p class = "admin-message-text">
+                        ${item.message}
+                    </p>
+                    <button
+                        class = "delete-message-button"
+                        type = "button"
+                        data-message-id = "${item.id}"
+                    >
+                        delete
+                    </button>
+                </article>
+            `).join("");
+
+            document
+                .querySelectorAll(".delete-message-button")
+                .forEach(button => {
+                    button.addEventListener("click", async () => {
+                        const shouldDelete = window.confirm(
+                            "delete this message?"
+                        );
+
+                        if (!shouldDelete) {
+                            return;
+                        }
+
+                        messageAdminStatus.textContent = 
+                            "deleting message...";
+                        
+                        const {error} = await supabaseClient
+                            .from("messages")
+                            .delete()
+                            .eq(
+                                "id",
+                                Number(button.dataset.messageId)
+                            );
+                        
+                        if (error) {
+                            messageAdminStatus.textContent = error.message;
+                            return;
+                        }
+                        messageAdminStatus.textContent = "message deleted ời!!!";
+
+                        await loadMessageManagerData();
+                        await loadMessageJarFromDatabase();
+                    });
+                });
+    }
+    
+    messageForm.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const categoryId = Number(categorySelect.value);
+        const message = messageText.value.trim();
+
+        if (!categoryId || !message) {
+            messageAdminStatus.textContent = 
+                "choose a category and write a message!";
+            return;
+        }
+
+        messageAdminStatus.textContent = 
+            "saving message...";
+        const {error} = await supabaseClient
+            .from("messages")
+            .insert({
+                category.id: categoryId,
+                message
+            });
+        
+        if (error) {
+            messageAdminStatus.textContent = error.message;
+            return;
+        }
+
+        messageForm.reset();
+        messageAdminStatus.textContent = "message được thêm rồi nè!";
+        
+        await loadMessageManagerData();
+        await loadMessageJarFromDatabase();
+    });
+
+    document
+        .querySelector("#messageManagerBackButton")
+        .addEventListener("click", async () => {
+            const user = await getCurrentUser();
+
+            if (user) {
+                await showAdminDashboard();
+            }
+        });
+    
+    try {
+        await loadMessageManagerData();
+    } catch (error) {
+        console.error("Failed to load message manager:", error);
+
+        messageAdminList.textContent = 
+            "could not load messages right now ùi:("
     }
 }
 
