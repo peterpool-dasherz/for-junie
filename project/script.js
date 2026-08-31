@@ -843,7 +843,7 @@ async function showMessageManager() {
             <select id = "messageCategory" required>
                 <option value = "">choose a category</option>
             </select>
-            <textarea>
+            <textarea
                 id = "messageText"
                 placeholder = "write a message..."
                 rows = "5"
@@ -909,9 +909,9 @@ async function showMessageManager() {
         categorySelect.innerHTML = `
             <option value = "">choose a category</option>
             ${categories.map(category => `
-                <option value = "${categoru.id}">
+                <option value = "${category.id}">
                     ${category.label}
-                </option
+                </option>
             `).join("")}
         `;
         messages = categories.flatMap(category =>
@@ -934,8 +934,8 @@ async function showMessageManager() {
             return;
         }
         messageAdminList.innerHTML = messages.map(item => `
-                <article class = "admin-section"
-                    <p class = "message-category"
+                <article class = "admin-section">
+                    <p class = "message-category">
                         ${item.categoryLabel}
                     </p>
                     <p class = "admin-message-text">
@@ -1003,7 +1003,7 @@ async function showMessageManager() {
         const {error} = await supabaseClient
             .from("messages")
             .insert({
-                category.id: categoryId,
+                category_id: categoryId,
                 message
             });
         
