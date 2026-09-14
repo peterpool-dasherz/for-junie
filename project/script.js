@@ -379,6 +379,7 @@ supabaseClient.auth.onAuthStateChange((_event, session) => {
             await loadMessageJarFromDatabase();
             await loadRemindersFromDatabase();
             await loadPhotosFromDatabase();
+            await loadWeeklyPhotoDumps();
             await showPrivateApp(session.user);
         } catch (error) {
             console.error(
@@ -1211,6 +1212,170 @@ function addMenuListeners() {
     });
 }
 
+function showWeeklyPhotoDump(dumpId) {
+    const dump = (siteContent?.weeklyDumps || []).find(
+        item => String(item.id) === String(dumpId)
+    );
+
+    if (!dump) {
+        return;
+    }
+
+    const photos = dump.photos || [];
+
+    const photoGallery = photos.map((photo, index) => {
+        const photoAlt =
+            photo.alt_text ||
+            `${dump.title || "weekly memory"} photo ${index + 1}`;
+        return `
+            <button
+                class = "photo-card"
+                type = "button"
+                aria-label = "Open ${escapeAttribute(photoAlt)}"
+                data-photo = "${escapeAttribute(photo.image_url)}"
+            >
+                <img
+                    src = "${escapeAttribute(
+                        getOptimizedPhotoPath(photo.image_url)
+                    )}"
+                    alt = "${escapeAttribute(photoAlt)}"
+                    loading = "lazy"
+                    onerror = "handlePhotoError(this)"
+                >
+                ${
+                    photo.caption
+                        ? `<span class = "photo-caption">${escapeHtml(
+                            photo.caption
+                        )}</span>`
+                        : ""
+                }
+            </button>
+        `;
+    }).join("");
+
+    welcomeCard.innerHTML = `
+        <div class = "heart">🗓️</div>
+        <p class = "small-text">
+            a little piece of our week
+        </p>
+        <h1>
+            ${escapeHtml(dump.title || "weekly photo dump")}
+        </h1>
+        ${
+            dump.note
+                ? `
+                    <p class = "gallery-intro">
+                        ${escapeHtml(dump.note)}
+                    </p>
+                `
+                : ""
+        }
+
+        ${
+            photos.length > 0
+                ? `
+                    <div class = "photo-gallery">
+                        ${photoGallery}
+                    </div>
+                `
+                : `
+                    <div class = "feature-message">
+                        no photos in this dumpy yet:<br>
+                        we'll add some in soon!!!
+                    </div>
+                `
+        }
+
+        <button
+            id = "weeklyDumpBackButton"
+            class = "back-button"
+            type = "button"
+        >
+            back to our photos!
+        </button>
+    `;
+
+    document
+        .querySelector("#weeklyDumpBackButton")
+        .addEventListener("click", () => {
+            showFeature("photos");
+        });
+    
+    const photoCards = document.querySelectorAll(".photo-card");
+    photoCards.forEach(card => {
+        card.addEventListener("click", function () {
+            const triggerButton = this;
+            const image = this.querySelector("img");
+            const lightbox = document.createElement("div");
+
+            lightbox.className = "photo-lightbox";
+            lightbox.setAttribute("role", "dialog");
+            lightbox.setAttribute("aria-modal", "true");
+            lightbox.setAttribute("aria-label", "Expanded photo");
+
+            lightbox.innerHTML = `
+                <button
+                    class = "lightbox-close"
+                    type = "button"
+                    aria-label = "Close photo"
+                >
+                    x 
+                </button>
+                <img
+                    src = "${image.src}"
+                    alt = "${image.alt}"
+                >
+            `;
+            document.body.appendChild(lightbox);
+            document.body.classList.add("lightbox-open");
+
+            const closeButton = 
+                lightbox.querySelector(".lightbox-close");
+            const lightboxImage =
+                lightbox.querySelector("img");
+            const closeLightbox = () => {
+                lightbox.remove();
+                document.body.classList.remove("lightbox-open");
+                document.removeEventListener("keydown", closeOnEscape);
+                triggerButton.focus();
+            };
+
+            const closeOnEscape = event => {
+                if (event.key === "Escape") {
+                    closeLightbox();
+                }
+            };
+
+            lightbox.addEventListener("click", event => {
+                if (
+                    event.target === lightbox ||
+                    event.target === closeButton
+                ) {
+                    closeLightbox();
+                }
+            });
+
+            lightbox.addEventListener("keydown", event => {
+                if (event.key === "Tab") {
+                    event.preventDefault();
+                    closeButton.focus();
+                }
+            });
+
+            document.addEventListener("keydown", closeOnEscape);
+
+            requestAnimationFrame(() => {
+                lightbox.classList.add("is-open");
+                closeButton.focus();
+            });
+
+            lightboxImage.addEventListener("load", () => {
+                lightboxImage.focus();
+            });
+        });
+    });
+}
+
 function showFeature(feature) {
     let content = "";
     
@@ -1312,6 +1477,8 @@ function showFeature(feature) {
 
     if (feature === "photos") {
         const photos = siteContent?.photos;
+        const weeklyDumps = siteContent?.weeklyDumps || [];
+
         if (!photos) {
             content = `
                 <div class = "heart">📷</div>
@@ -1346,6 +1513,56 @@ function showFeature(feature) {
                 `;
             }).join("");
 
+            const weeklyDumpCards = weeklyDumps.map(dump => {
+                const firstPhoto = dump.photos?.[0];
+                const photoCount = dump.photos?.length || 0;
+
+                return `
+                    <button
+                        class = "weekly-dump-card"
+                        type = "button"
+                        data-dump-id = "${escapeAttribute(dump.id)}"
+                    >
+                        ${
+                            firstPhoto
+                                ? `
+                                    <img
+                                        src = "${escapeAttribute(
+                                            getOptimizedPhotoPath(
+                                                firstPhoto.image_url
+                                            )
+                                        )}"
+                                        alt = "${escapeAttribute(
+                                            firstPhoto.alt_text ||
+                                            dump.title ||
+                                            "weekly memory"
+                                        )}"
+                                        loading = "lazy"
+                                        onerror = "handlePhotoError(this)"
+                                    >
+                                `
+                                : `
+                                    <div class = "weekly-dump-placeholder">
+                                        🗓️
+                                    </div>
+                                `
+                        }
+
+                        <div class = "weekly-dump-info">
+                            <strong>
+                                ${escapeHtml(
+                                    dump.title || "another week with you!"
+                                )}
+                            </strong>
+                            <span>
+                                ${photoCount}
+                                ${photoCount === 1 ? "photo" : "photos"}
+                            </span>
+                        </div>
+                    </button>
+                `;
+            }).join("");
+
             content = `
                 <div class = "heart">📷</div>
                 <p class = "small-text">${escapeHtml(photos.eyebrow)}</p>
@@ -1355,6 +1572,36 @@ function showFeature(feature) {
                     ${photoGallery}
                 </div>
                 <p class = "gallery-note">${escapeHtml(photos.note)}</p>
+                <div class = "weekly-dumps-divider">
+                    <span>♡</span>
+                </div>
+                <div class = "weekly-dumps-section">
+                    <p class = "small-text">
+                        🗓️ little pieces of us nè!
+                    </p>
+
+                    <h2 class = "weekly-dumps-title">
+                        weekly photo dumps
+                    </h2>
+                    <p class = "weekly-dumps-intro">
+                        a small and tiny collection of our weeks together nè!!!
+                    </p>
+
+                    ${
+                        weeklyDumps.length > 0
+                            ? `
+                                <div class = "weekly-dump-list">
+                                    ${weeklyDumpCards}
+                                </div>
+                            `
+                            : `
+                                <div class = "feature-message">
+                                    chưa có thêm gì nên từ từ nha!!!
+                                    cả 2 tụi mình đều up được á!
+                                </div>
+                            `
+                    }
+                </div>
             `;
         }
     }
@@ -1543,6 +1790,14 @@ function showFeature(feature) {
             showFeature("motivation");
         });
     }
+
+    const weeklyDumpCards = document.querySelectorAll(".weekly-dump-card");
+    weeklyDumpCards.forEach(card => {
+        card.addEventListener("click", () => {
+            showWeeklyPhotoDump(card.dataset.dumpId);
+        });
+    });
+
     const photoCards = document.querySelectorAll(".photo-card");
     photoCards.forEach(card => {
         card.addEventListener("click", function () {
