@@ -245,7 +245,8 @@ h1 {
 }
 
 .admin-form input,
-.admin-form textarea {
+.admin-form textarea,
+.admin-form select {
     width: 100%;
     padding: 13px 15px;
 
@@ -261,7 +262,8 @@ h1 {
 }
 
 .admin-form input:focus,
-.admin-form textarea:focus {
+.admin-form textarea:focus,
+.admin-form select:focus {
     border-color: #d96d96;
     box-shadow: 0 0 0 4px rgba(240, 164, 189, 0.22);
 }
@@ -269,6 +271,11 @@ h1 {
 .admin-form textarea {
     min-height: 110px;
     line-height: 1.5;
+}
+
+.admin-form select {
+    appearance: none;
+    cursor: pointer;
 }
 
 .admin-reminder-heading {
@@ -336,7 +343,8 @@ h1 {
     }
 
     .admin-form input,
-    .admin-form textarea {
+    .admin-form textarea,
+    .admin-form select {
         font-size: 16px;
     }
 

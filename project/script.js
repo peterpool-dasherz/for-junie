@@ -7,6 +7,23 @@ const supabaseClient = window.supabase.createClient(
     SUPABASE_PUBLISHABLE_KEY
 );
 
+function escapeHtml(value = "") {
+    return String(value).replace(/[&<>"']/g, character => {
+        const entities = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;"
+        };
+
+        return entities[character];
+    });
+}
+
+function escapeAttribute(value = "") {
+    return escapeHtml(value).replace(/`/g, "&#096;");
+}
 
 const startButton = document.querySelector("#startButton");
 const welcomeCard = document.querySelector(".welcome-card");
@@ -131,7 +148,7 @@ async function loadMessageJarFromDatabase() {
             category.name,
             {
                 label: category.label,
-                messages: category.messages.map(item => item.message)
+                messages: (category.messages || []).map(item => item.message)
             }
         ])
     );
@@ -233,6 +250,34 @@ async function loadPhotosFromDatabase() {
     }));
 }
 
+async function loadWeeklyPhotoDumps() {
+    const {data, error} = await supabaseClient
+        .from("weekly_photo_dumps")
+        .select(`
+            id,
+            week_start,
+            title,
+            note,
+            weekly_photo_dump_items(
+                id,
+                image_url,
+                alt_text,
+                caption,
+                sort_order
+            )
+        `)
+        .order("week_start", {ascending: false});
+    if (error) {
+        throw error;
+    }
+
+    siteContent.weeklyDumps = (data || []).map(dump => ({
+        ...dump,
+        photos: (dump.weekly_photo_dump_items || [])
+            .sort((a, b) => a.sort_order - b.sort_order)
+    }));
+}
+
 async function signOut() {
     const {error} = await supabaseClient.auth.signOut();
 
@@ -308,6 +353,7 @@ async function checkAuth() {
         await loadMessageJarFromDatabase();
         await loadRemindersFromDatabase();
         await loadPhotosFromDatabase();
+        await loadWeeklyPhotoDumps();
     } catch (error) {
         console.error("Failed to load messages from database:", error);
     }
@@ -506,19 +552,20 @@ function showPasswordResetScreen() {
 
 async function showPrivateApp(user) {
     const userIsAdmin = await isAdmin();
+    const home = siteContent.home || {};
     welcomeCard.innerHTML = `
         <div class = "heart">🩷</div>
         <p class = "small-text">
-            he nhô! welcome back!
+            ${escapeHtml(home.eyebrow || "he nhô! welcome back!")}
         </p>
-        <h1>hello junieee!!!</h1>
+        <h1>${escapeHtml(home.title || "hello junieee!!!")}</h1>
         <p class = "intro">
-            nhớ tui thì ở đây xíu nè!
+            ${escapeHtml(home.intro || "nhớ tui thì ở đây xíu nè!")}
         </p>
         <div class = "home-photo-banner">
             <img
-                src = "assets/images/FullSizeRender 2.jpg"
-                alt = "a photo of us"
+                src = "${escapeAttribute(home.bannerImage || "assets/images/FullSizeRender 2.jpg")}"
+                alt = "${escapeAttribute(home.bannerAlt || "a photo of us")}"
             >
         </div>
         <button id = "continueButton" type = "button">
@@ -674,23 +721,23 @@ async function showAdminDashboard() {
             <article class = "admin-section">
                 <div class = "admin-reminder-heading">
                     <span aria-hidden = "true">
-                        ${reminder.icon || "📝"}
+                        ${escapeHtml(reminder.icon || "📝")}
                     </span>
-                    <h2>${reminder.title}</h2>
+                    <h2>${escapeHtml(reminder.title)}</h2>
                 </div>
-                <p>${reminder.description}</p>
+                <p>${escapeHtml(reminder.description)}</p>
                 <div class = "admin-actions">
                     <button
                         class = "edit-reminder-button"
                         type = "button"
-                        data-reminder-id = "${reminder.id}"
+                        data-reminder-id = "${escapeAttribute(reminder.id)}"
                     >
                         edit
                     </button>
                     <button
                         class = "delete-reminder-button"
                         type = "button"
-                        data-reminder-id = "${reminder.id}"
+                        data-reminder-id = "${escapeAttribute(reminder.id)}"
                     >
                         delete
                     </button>
@@ -909,8 +956,8 @@ async function showMessageManager() {
         categorySelect.innerHTML = `
             <option value = "">choose a category</option>
             ${categories.map(category => `
-                <option value = "${category.id}">
-                    ${category.label}
+                <option value = "${escapeAttribute(category.id)}">
+                    ${escapeHtml(category.label)}
                 </option>
             `).join("")}
         `;
@@ -936,15 +983,15 @@ async function showMessageManager() {
         messageAdminList.innerHTML = messages.map(item => `
                 <article class = "admin-section">
                     <p class = "message-category">
-                        ${item.categoryLabel}
+                        ${escapeHtml(item.categoryLabel)}
                     </p>
                     <p class = "admin-message-text">
-                        ${item.message}
+                        ${escapeHtml(item.message)}
                     </p>
                     <button
                         class = "delete-message-button"
                         type = "button"
-                        data-message-id = "${item.id}"
+                        data-message-id = "${escapeAttribute(item.id)}"
                     >
                         delete
                     </button>
@@ -1066,6 +1113,14 @@ function animateCard() {
 }
 
 function getOptimizedPhotoPath(photoPath) {
+    if (!photoPath || /^https?:\/\//i.test(photoPath)) {
+        return photoPath;
+    }
+
+    if (!photoPath.startsWith("assets/images/")) {
+        return photoPath;
+    }
+    
     return photoPath.replace(
         "assets/images/",
         "assets/images/optimized/"
@@ -1266,36 +1321,40 @@ function showFeature(feature) {
                 </div>
             `;
         } else {
-            const photoGallery = photos.items.map((photo, index) => `
-                <button
-                    class = "photo-card"
-                    type = "button"
-                    aria-label = "Open ${photo.alt || `memory ${index + 1}`}"
-                    data-photo = "${photo.src}"
-                >
-                    <img
-                        src = "${getOptimizedPhotoPath(photo.src)}"
-                        alt = "${photo.alt || `memory ${index + 1}`}"
-                        loading = "lazy"
-                        onerror = "handlePhotoError(this)"
+            const photoGallery = photos.items.map((photo, index) => {
+                const photoAlt = photo.alt || `memory ${index + 1}`;
+
+                return `
+                    <button
+                        class = "photo-card"
+                        type = "button"
+                        aria-label = "Open ${escapeAttribute(photoAlt)}"
+                        data-photo = "${escapeAttribute(photo.src)}"
                     >
-                    ${
-                        photo.caption
-                            ? `<span class = "photo-caption">${photo.caption}</span>`
-                            : ""
-                    }
-                </button>
-            `).join("");
+                        <img
+                            src = "${escapeAttribute(getOptimizedPhotoPath(photo.src))}"
+                            alt = "${escapeAttribute(photoAlt)}"
+                            loading = "lazy"
+                            onerror = "handlePhotoError(this)"
+                        >
+                        ${
+                            photo.caption
+                                ? `<span class = "photo-caption">${escapeHtml(photo.caption)}</span>`
+                                : ""
+                        }
+                    </button>
+                `;
+            }).join("");
 
             content = `
                 <div class = "heart">📷</div>
-                <p class = "small-text">${photos.eyebrow}</p>
-                <h1>${photos.title}</h1>
-                <p class = "gallery-intro">${photos.intro}</p>
+                <p class = "small-text">${escapeHtml(photos.eyebrow)}</p>
+                <h1>${escapeHtml(photos.title)}</h1>
+                <p class = "gallery-intro">${escapeHtml(photos.intro)}</p>
                 <div class = "photo-gallery">
                     ${photoGallery}
                 </div>
-                <p class = "gallery-note">${photos.note}</p>
+                <p class = "gallery-note">${escapeHtml(photos.note)}</p>
             `;
         }
     }
@@ -1306,11 +1365,11 @@ function showFeature(feature) {
         const reminderCards = reminders.map(reminder => `
             <article class = "reminder-card">
                 <div class = "reminder-icon" aria-hidden = "true">
-                    ${reminder.icon}
+                    ${escapeHtml(reminder.icon)}
                 </div>
                 <div>
-                    <h2>${reminder.title}</h2>
-                    <p>${reminder.text}</p>
+                    <h2>${escapeHtml(reminder.title)}</h2>
+                    <p>${escapeHtml(reminder.text)}</p>
                 </div>
             </article>
         `).join("");
@@ -1404,9 +1463,9 @@ function showFeature(feature) {
                 <button
                     class = "jar-situation"
                     type = "button"
-                    data-situation = "${key}"
+                    data-situation = "${escapeAttribute(key)}"
                 >
-                    ${situation.label}
+                    ${escapeHtml(situation.label)}
                 </button>
             `).join("");
         
