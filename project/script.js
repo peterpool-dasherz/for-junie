@@ -1212,21 +1212,60 @@ function addMenuListeners() {
     });
 }
 
+function formatWeeklyDumpDate(dateString) {
+    if (!dateString) {
+        return "";
+    }
+
+    const startDate = new Date(`${dateString}T00:00:00`);
+
+    if (Number.isNaN(startDate.getTime())) {
+        return "";
+    }
+
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 6);
+
+    const startMonth = startDate.toLocaleDateString("en-US", {
+        month: "long"
+    });
+
+    const endMonth = endDate.toLocaleDateString({
+        month: "long"
+    });
+
+    const startDay = startDate.getDate();
+    const endDay = endDate.getDate();
+
+    if (startmonth === endMonth) {
+        return `${startMonth} ${startDay}-${endDay}`;
+    }
+
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+}
+
 function showWeeklyPhotoDump(dumpId) {
-    const dump = (siteContent?.weeklyDumps || []).find(
-        item => String(item.id) === String(dumpId)
+    const weeklyDumps = siteContent?.weeklyDumps || [];
+
+    const currentIndex = weeklyDumps.findIndex(
+        dump => String(dump.id) === String(dumpId)
     );
 
-    if (!dump) {
+    if (currentIndex === -1) {
         return;
     }
 
+    const dump = weeklyDumps[currentIndex];
     const photos = dump.photos || [];
+
+    const previousDump = weeklyDumps[currentIndex + 1] || null;
+    const nextDump = weeklyDumps[currentIndex - 1] || null;
 
     const photoGallery = photos.map((photo, index) => {
         const photoAlt =
-            photo.alt_text ||
+            photo.alt_text || 
             `${dump.title || "weekly memory"} photo ${index + 1}`;
+        
         return `
             <button
                 class = "photo-card"
@@ -1242,25 +1281,40 @@ function showWeeklyPhotoDump(dumpId) {
                     loading = "lazy"
                     onerror = "handlePhotoError(this)"
                 >
+
                 ${
                     photo.caption
-                        ? `<span class = "photo-caption">${escapeHtml(
-                            photo.caption
-                        )}</span>`
+                        ? `
+                            <span class = "photo-caption">
+                                ${escapeHtml(photo.caption)}
+                            </span>
+                        `
                         : ""
                 }
             </button>
         `;
     }).join("");
 
+    const weekDate = formatWeeklyDumpDate(dump.week_start);
     welcomeCard.innerHTML = `
         <div class = "heart">🗓️</div>
         <p class = "small-text">
-            a little piece of our week
+            a little piece of our week!!!
         </p>
         <h1>
             ${escapeHtml(dump.title || "weekly photo dump")}
         </h1>
+
+        ${
+            weekDate
+                ? `
+                    <p class = "weekly-dump-date">
+                        ${escapeHtml(weekDate)}
+                    </p>
+                `
+                : ""
+        }
+
         ${
             dump.note
                 ? `
@@ -1286,6 +1340,36 @@ function showWeeklyPhotoDump(dumpId) {
                 `
         }
 
+        <div class = "weekly-dump-navigation">
+            ${
+                previousDump
+                    ? `
+                        <button
+                            id = "previousWeeklyDumpButton"
+                            class = "secondary-button"
+                            type = "button"
+                        >
+                            ← previous week
+                        </button>
+                    `
+                    : ""
+            }
+
+            ${
+                nextDump
+                    ? `
+                        <button
+                            id = "nextWeeklyDumpButton"
+                            class = "secondary-button"
+                            type = "button"
+                        >
+                            next week →
+                        </button>
+                    `
+                    : ""
+            }
+        </div>
+
         <button
             id = "weeklyDumpBackButton"
             class = "back-button"
@@ -1295,23 +1379,51 @@ function showWeeklyPhotoDump(dumpId) {
         </button>
     `;
 
-    document
-        .querySelector("#weeklyDumpBackButton")
-        .addEventListener("click", () => {
-            showFeature("photos");
-        });
+    animateCard();
+
+    const backButton = 
+        document.querySelector("#weeklyDumpBackButton");
+
+    backButton.addEventListener("click", () => {
+        showFeature("photos");
+    });
+
+    const previousButton =
+        document.querySelector("#previousWeeklyDumpButton");
     
-    const photoCards = document.querySelectorAll(".photo-card");
+    if (previousButton) {
+        previousButton.addEventListener("click", () => {
+            showWeeklyPhotoDump(previousDump.id);
+        });
+    }
+
+    const nextButton =
+        document.querySelector("#nextWeeklyDumpButton");
+    
+    if (nextButton) {
+        nextButton.addEventListener("click", () => {
+            showWeeklyPhotoDump(nextDump.id);
+        });
+    }
+
+    const photoCards =
+        document.querySelectorAll(".photo-card");
+    
     photoCards.forEach(card => {
         card.addEventListener("click", function () {
             const triggerButton = this;
             const image = this.querySelector("img");
-            const lightbox = document.createElement("div");
+
+            const lightbox =
+                document.createElement("div");
 
             lightbox.className = "photo-lightbox";
             lightbox.setAttribute("role", "dialog");
             lightbox.setAttribute("aria-modal", "true");
-            lightbox.setAttribute("aria-label", "Expanded photo");
+            lightbox.setAttribute(
+                "aria-label",
+                "Expanded photo"
+            );
 
             lightbox.innerHTML = `
                 <button
@@ -1319,24 +1431,32 @@ function showWeeklyPhotoDump(dumpId) {
                     type = "button"
                     aria-label = "Close photo"
                 >
-                    x 
+                    x
                 </button>
+                
                 <img
                     src = "${image.src}"
                     alt = "${image.alt}"
                 >
             `;
+
             document.body.appendChild(lightbox);
             document.body.classList.add("lightbox-open");
 
-            const closeButton = 
+            const closeButton =
                 lightbox.querySelector(".lightbox-close");
-            const lightboxImage =
-                lightbox.querySelector("img");
+            
             const closeLightbox = () => {
                 lightbox.remove();
-                document.body.classList.remove("lightbox-open");
-                document.removeEventListener("keydown", closeOnEscape);
+                document.body.classList.remove(
+                    "lightbox-open"
+                );
+
+                document.removeEventListener(
+                    "keydown",
+                    closeOnEscape
+                );
+
                 triggerButton.focus();
             };
 
@@ -1355,22 +1475,14 @@ function showWeeklyPhotoDump(dumpId) {
                 }
             });
 
-            lightbox.addEventListener("keydown", event => {
-                if (event.key === "Tab") {
-                    event.preventDefault();
-                    closeButton.focus();
-                }
-            });
-
-            document.addEventListener("keydown", closeOnEscape);
+            document.addEventListener(
+                "keydown",
+                closeOnEscape
+            );
 
             requestAnimationFrame(() => {
                 lightbox.classList.add("is-open");
                 closeButton.focus();
-            });
-
-            lightboxImage.addEventListener("load", () => {
-                lightboxImage.focus();
             });
         });
     });
