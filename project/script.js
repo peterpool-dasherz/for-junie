@@ -1230,14 +1230,14 @@ function formatWeeklyDumpDate(dateString) {
         month: "long"
     });
 
-    const endMonth = endDate.toLocaleDateString({
+    const endMonth = endDate.toLocaleDateString("en-US", {
         month: "long"
     });
 
     const startDay = startDate.getDate();
     const endDay = endDate.getDate();
 
-    if (startmonth === endMonth) {
+    if (startMonth === endMonth) {
         return `${startMonth} ${startDay}-${endDay}`;
     }
 

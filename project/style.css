@@ -718,6 +718,47 @@ button:active {
     .weekly-dump-date {
         margin-bottom: 14px;
     }
+
+    .weekly-dump-card-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .weekly-dump-card-heading strong {
+        flex: 1;
+    }
+
+    .weekly-dump-arrow {
+        font-size: 1.25rem;
+        transition: transform 0.2s ease;
+    }
+
+    .weekly-dump-card:hover .weekly-dump-arrow,
+    .weekly-dump-card:focus-visible .weekly-dump-arrow {
+        transform: translateX(4px);
+    }
+
+    .weekly-dump-photo-count {
+        display: block;
+        margin-top: 4px;
+        font-size: 0.85rem;
+        opacity: 0.7;
+    }
+
+    .weekly-dump-card:hover .weekly-dump-card-image img,
+    .weekly-dump-card:focus-visible .weekly-dump-card-image img {
+        transform: scale(1.04);
+    }
+
+    .weekly-dump-card-image {
+        overflow: hidden;
+    }
+
+    .weekly-dump-card-image img {
+        transition: transform 0.25s ease;
+    }
 }
 
 /* Menu */
