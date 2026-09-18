@@ -1900,7 +1900,7 @@ function showFeature(feature) {
         hugAgainButton.addEventListener("click", function () {
             hugCount += 1;
 
-            const hugAnimation = document.querySelector("#hugAgainButton");
+            const hugAnimation = document.querySelector("#hugAnimation");
             const hugCounter = document.querySelector("#hugCounter");
             const hugResponse = document.querySelector("#hugResponse");
 
@@ -1924,7 +1924,7 @@ function showFeature(feature) {
                 ];
 
                 const randomResponse = 
-                    hugResponse[
+                    hugResponses[
                         Math.floor(Math.random() * hugResponses.length)
                     ];
                 
