@@ -2037,7 +2037,11 @@ function showFeature(feature) {
         jarMessage.classList.add("jar-message-pop");
 
         if (jarVisual) {
-            jarVisual.classList.add("jar-shake");
+            jarVisual.classList.add("jar-opening");
+
+            setTimeout(() => {
+                jarVisual.classList.remove("jar-opening");
+            }, 650);
         }
     }
 
