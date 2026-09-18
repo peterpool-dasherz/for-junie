@@ -1496,7 +1496,7 @@ function showFeature(feature) {
         hugCount++;
         const hugMessage = "tui biết tui đang xa cô lắm, nhưng mà coi như cái này là 1 cái ôm thật chặt từ tui nhaaa!!! yêu cô lắm áaa!!!";
         content = `
-            <div class = "hug-animation">
+            <div class = "hug-animation" id = "hugAnimation">
                 <span>ôm nèeee</span>
             </div>
             <div class = "heart">💕</div>
@@ -1514,12 +1514,23 @@ function showFeature(feature) {
             <div class = "feature-message">
                 ${hugMessage}
             </div>
-            <p class = "hug-counter">
+            <p class = "hug-counter" id = "hugCounter">
                 ôm ${hugCount} lần ời nèeeee!!!
             </p>
-            <button class = "secondary-button" id = "hugAgainButton">
+            <button 
+                class = "secondary-button" 
+                id = "hugAgainButton"
+                type = "button"
+            >
                 ôm thêm cái nè!
             </button>
+            <p
+                class = "hug-response"
+                id = "hugResponse"
+                role = "status"
+                aria-live = "polite"
+            >
+            </p>
         `;
     }
 
@@ -1887,7 +1898,43 @@ function showFeature(feature) {
     const hugAgainButton = document.querySelector("#hugAgainButton");
     if (hugAgainButton) {
         hugAgainButton.addEventListener("click", function () {
-            showFeature("hug");
+            hugCount += 1;
+
+            const hugAnimation = document.querySelector("#hugAgainButton");
+            const hugCounter = document.querySelector("#hugCounter");
+            const hugResponse = document.querySelector("#hugResponse");
+
+            if (hugCounter) {
+                hugCounter.textContent = `ôm ${hugCount} lần ời nèeee!!!`;
+            }
+
+            if (hugAnimation) {
+                hugAnimation.classList.remove("hug-tapped");
+                void hugAnimation.offsetWidth;
+                hugAnimation.classList.add("hug-tapped");
+            }
+
+            if (hugResponse) {
+                const hugResponses = [
+                    "tớ ôm rồi nhá!!!!",
+                    "ôm 1 cái siêu chặt nèeee!!!",
+                    "A HUNNID MOREEEE!!!",
+                    "NHỚ VL Í:(",
+                    "về nhớ cho tui bám đó:("
+                ];
+
+                const randomResponse = 
+                    hugResponse[
+                        Math.floor(Math.random() * hugResponses.length)
+                    ];
+                
+                hugResponse.textContent = randomResponse;
+                hugResponse.classList.remove("hug-response-pop");
+
+                void hugResponse.offsetWidth;
+
+                hugResponse.classList.add("hug-response-pop");
+            }
         });
     }
     const sweetAgainButton = document.querySelector("#sweetAgainButton");
