@@ -1040,6 +1040,108 @@ button:active {
     }
 }
 
+.hug-button {
+    width: 100%;
+    margin-top: 8px;
+
+    background: #d98caf;
+    color: white;
+
+    font-size: 15px;
+    font-weight: bold;
+
+    box-shadow: 0 8px 18px rgba(220, 120, 155, 0.18);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.hug-button:hover {
+    background: #c9799d;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(220, 120, 155, 0.25);
+}
+
+.hug-button:active {
+    transform: scale(0.97);
+}
+
+.hug-animation {
+    position: relative;
+}
+
+.hug-animation.hug-tapped {
+    animation:
+        hugTap 0.55s ease,
+        hugHeartBurst 0.55s ease;
+}
+
+.hug-response {
+    min-height: 24px;
+
+    margin: 14px 0 0;
+
+    color: #8f4d68;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.hug-response-pop {
+    animation: hugResponsePop 0.4s ease;
+}
+
+@keyframes hugTap {
+    0% {
+        transform: scale(1);
+    }
+
+    25% {
+        transform: scale(1.3) rotate(-6deg);
+    }
+
+    50% {
+        transform: scale(1.42) rotate(6deg);
+    }
+
+    75% {
+        transform: scale(1.2) rotate(-3deg);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes hugHeartBurst {
+    0% {
+        filter: drop-shadow(0 0 0 rgba(217, 140, 175, 0));
+    }
+
+    45% {
+        filter:
+            drop-shadow(-22px -12px 0 rgba(217, 140, 175, 0.45))
+            drop-shadow(22px -10px 0 rgba(217, 140, 175, 0.45));
+    }
+
+    100% {
+        filter: drop-shadow(0 0 0 rgba(217, 140, 175, 0));
+    }
+}
+
+@keyframes hugResponsePop {
+    from {
+        opacity: 0;
+        transform: translateY(6px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
 /* Message jar */
 
 .jar-visual {
